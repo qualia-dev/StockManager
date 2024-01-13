@@ -1,0 +1,2 @@
+# StockManager
+Managa stocks
