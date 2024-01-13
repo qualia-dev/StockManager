@@ -1,0 +1,2 @@
+# StockMan
+Manage stocks

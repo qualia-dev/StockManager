@@ -1,0 +1,12 @@
+Symbol|Security Name|Market Category|Test Issue|Financial Status|Round Lot Size|ETF|NextShares
+AACG|ATA Creativity Global - American Depositary Shares, each representing two common shares|G|N|D|100|N|N
+AACI|Armada Acquisition Corp. I - Common Stock|G|N|N|100|N|N
+AACIU|Armada Acquisition Corp. I - Unit|G|N|N|100|N|N
+AACIW|Armada Acquisition Corp. I - Warrant|G|N|N|100|N|N
+AADI|Aadi Bioscience, Inc. - Common Stock|S|N|N|100|N|N
+AADR|AdvisorShares Dorsey Wright ADR ETF|G|N|N|100|Y|N
+AAGR|African Agriculture Holdings Inc. - Common Stock|G|N|N|100|N|N
+AAGRW|African Agriculture Holdings Inc. - Warrant|G|N|N|100|N|N
+AAL|American Airlines Group, Inc. - Common Stock|Q|N|N|100|N|N
+AAME|Atlantic American Corporation - Common Stock|G|N|N|100|N|N
+File Creation Time: 0112202408:16|||||||
