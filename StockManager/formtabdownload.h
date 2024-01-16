@@ -23,7 +23,7 @@ class FormTabDownload : public QWidget
     Q_OBJECT
 
 public:
-    explicit FormTabDownload(SqliteWrap* _db, QWidget *parent = nullptr);
+    explicit FormTabDownload(SqliteWrap* db, QWidget *parent = nullptr);
     ~FormTabDownload();
 
 private slots:
@@ -35,8 +35,8 @@ private:
 
 private:
     Ui::FormTabDownload *ui;
-    MainWindow* mw;
-    SqliteWrap* db;
+    MainWindow* _mw;
+    SqliteWrap* _db;
 
 };
 

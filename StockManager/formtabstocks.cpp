@@ -19,12 +19,16 @@ FormTabStocks::FormTabStocks(SqliteWrap* db, QWidget *parent)
     std::string condition = "";
     std::string result = "";
 
-    connect(this, &FormTabStocks::signal_select_stock_complete, this, &FormTabStocks::on_select_stock_complete);
+    connect(this, &FormTabStocks::signal_select_stock_complete, this, &FormTabStocks::onSelectStockComplete);
 
     _expected_rows = -1;
-    bool rc = _db->select_count_async(table, condition , _expected_rows);
-    rc = _db->select(table, condition , (void*)this, &FormTabStocks::select_stock_callback, result);
-
+    bool rc = _db->select(table, condition , (void*)this, &FormTabStocks::select_stock_callback, _expected_rows);
+    if (!rc)
+    {
+        std::cerr << "FormTabStocks::FormTabStocks - Error: select failed." << std::endl;
+        _mw->ui->te_log->append("Error: select failed.");
+        return;
+    }
 }
 
 FormTabStocks::~FormTabStocks()
@@ -37,13 +41,9 @@ int FormTabStocks::select_stock_callback(void* user_param, int nb_cols, char** c
 {
     FormTabStocks* form = (FormTabStocks*) user_param;
 
-    std::cout << "stock_callback - nb_rows: " << nb_cols << std::endl;
     std::string s = "";
-    for (int i = 0; i < nb_cols; i++)
-    {
-        s += " | " + std::string(col_names[i]) + ": " + (col_values[i] ? col_values[i] : "NULL");
-    }
-    std::cout << s << std::endl;
+    for (int i = 0; i < nb_cols; i++)   s += " | " + std::string(col_names[i]) + ": " + (col_values[i] ? col_values[i] : "NULL");
+    std::cout << "cols: " << nb_cols << " - " << s << std::endl;
 
     Stock stock;
     if (!stock.deserialize (col_values, nb_cols))
@@ -55,61 +55,63 @@ int FormTabStocks::select_stock_callback(void* user_param, int nb_cols, char** c
     form->_v_stocks.push_back(stock);
 
     if (form->_v_stocks.size() == form->_expected_rows)
-    {
-        // select complete
-        emit (form->signal_select_stock_complete());
-    }
+        emit (form->signal_select_stock_complete());    // select complete
 
     return 0;
 }
 
-void FormTabStocks::on_select_stock_complete()
+void FormTabStocks::onSelectStockComplete()
 {
     _mw->ui->te_log->append("select_stock_complete");
+
+    ui->tv_stocks->setAlternatingRowColors(true);
+    //ui->tv_stocks->horizontalHeader()->setFixedHeight(40);
+    //ui->tv_stocks->horizontalHeader()->setVisible(true);
+
+    // create model
+    _stocks_model = new StockModel(this);
+    _stocks_model->setSize(_expected_rows, 5);
+    _stocks_model->setData(_v_stocks);
+    ui->tv_stocks->setModel(_stocks_model);
+
+    // to set an original column size and keep the interactive capability
+    ui->tv_stocks->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
+    ui->tv_stocks->setColumnWidth(0, 50);
+    ui->tv_stocks->setColumnWidth(1, 250);
+    ui->tv_stocks->setColumnWidth(2, 100);
+    ui->tv_stocks->setColumnWidth(3, 200);
+    ui->tv_stocks->setColumnWidth(4, 200);
 }
 
 QVariant StockModel::data(const QModelIndex &index, int role) const
 {
     int col = index.column();
     // if(role == Qt::SizeHintRole)
-    // {
-    //     switch(col)
-    //     {
-    //     case 0:
-    //         return QSize(150, 10);
-    //     case 1:
-    //         return QSize(150, 10);
-    //     case 2:
-    //         return QSize(150, 10);
-    //     case 3:
-    //         return QSize(250, 10);
-    //     case 4:
-    //         return QSize(250, 10);
-    //     }
-    // }
-    // else if(role == Qt::DisplayRole)
-    // {
-    //     switch(col)
-    //     {
-    //     case 0:
-    //         return  QString::fromStdString(_v_people[index.row()].firstName);
-    //     case 1:
-    //         return  QString::fromStdString(_v_people[index.row()].lastName);
-    //     case 2:
-    //         return  QString::fromStdString(_v_people[index.row()].sex);
-    //     case 3:
-    //         return  QString::fromStdString(_v_people[index.row()].email);
-    //     case 4:
-    //         return  QString::fromStdString(_v_people[index.row()].phone);
-    //     default:
-    //         qDebug() << "Not supposed to happen";
-    //         return QVariant();
-    //     }
-    // }
-    // else if(role == Qt::TextAlignmentRole)
-    // {
-    //     return Qt::AlignCenter;
-    // }
+    // not needed column width is set in the widget
+    //
+    if(role == Qt::DisplayRole)
+    {
+        switch(col)
+        {
+        case 0:
+            return  _v_stocks[index.row()].id();
+        case 1:
+            return  QString::fromStdString(_v_stocks[index.row()].name());
+        case 2:
+            return  QString::fromStdString(_v_stocks[index.row()].symbol());
+        case 3:
+            return  QString::fromStdString(_v_stocks[index.row()].marketplaceName());
+        case 4:
+            return  QString::fromStdString(_v_stocks[index.row()].marketCategory());
+        default:
+            qDebug() << "Not supposed to happen";
+            return QVariant();
+        }
+    }
+    else if(role == Qt::TextAlignmentRole)
+    {
+        return Qt::AlignLeft;
+    }
 
     return QVariant();
 }

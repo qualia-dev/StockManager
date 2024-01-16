@@ -55,8 +55,8 @@ public:
     void setSourceData(const std::string& sourceData) { _source_data = sourceData; }
     void setLastUpdated(const std::string& lastUpdated) { _last_updated = lastUpdated; }
 
-    // function
-    bool deserialize (char** row, int nb_col);
+    // From db
+    bool deserialize (char** cols, int nb_col);
 
 };
 

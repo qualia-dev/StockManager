@@ -2026,9 +2026,9 @@ GSM|Ferroglobe PLC - Ordinary Shares|S|N|N|100|N|N
 GSMGW|Cheer Holding, Inc.  - Warrant|S|N|N|100|N|N
 GSUN|Golden Sun Education Group Limited - Class A Ordinary Shares|S|N|D|100|N|N
 GT|The Goodyear Tire & Rubber Company - Common Stock|Q|N|N|100|N|N
-GTAC|Global Technology Acquisition Corp. I - Class A Ordinary Shares|G|N|D|100|N|N
-GTACU|Global Technology Acquisition Corp. I - Unit|G|N|D|100|N|N
-GTACW|Global Technology Acquisition Corp. I - Warrant|G|N|D|100|N|N
+GTAC|Global Technology Acquisition Corp. I - Class A Ordinary Shares|S|N|D|100|N|N
+GTACU|Global Technology Acquisition Corp. I - Unit|S|N|D|100|N|N
+GTACW|Global Technology Acquisition Corp. I - Warrant|S|N|D|100|N|N
 GTBP|GT Biopharma, Inc. - Common Stock|S|N|D|100|N|N
 GTEC|Greenland Technologies Holding Corporation - Ordinary Shares|S|N|N|100|N|N
 GTH|Genetron Holdings Limited - American Depositary Shares|G|N|N|100|N|N
@@ -2137,6 +2137,8 @@ HOPE|Hope Bancorp, Inc. - Common Stock|Q|N|N|100|N|N
 HOTH|Hoth Therapeutics, Inc. - Common Stock|S|N|N|100|N|N
 HOUR|Hour Loop, Inc. - common stock|S|N|N|100|N|N
 HOVNP|Hovnanian Enterprises Inc - Depositary Share representing 1/1000th of 7.625% Series A Preferred Stock|G|N|N|100|N|N
+HOVR|New Horizon Aircraft Ltd. - Class A Ordinary Shares|S|N|N|100|N|N
+HOVRW|New Horizon Aircraft Ltd. - Warrant|S|N|N|100|N|N
 HOWL|Werewolf Therapeutics, Inc. - Common Stock|Q|N|N|100|N|N
 HPCO|Hempacco Co., Inc. - Common Stock|S|N|D|100|N|N
 HPK|HighPeak Energy, Inc. - Common Stock|G|N|N|100|N|N
@@ -3633,9 +3635,6 @@ PTEN|Patterson-UTI Energy, Inc. - Common Stock|Q|N|N|100|N|N
 PTF|Invesco Dorsey Wright Technology Momentum ETF|G|N|N|100|Y|N
 PTGX|Protagonist Therapeutics, Inc. - Common Stock|G|N|D|100|N|N
 PTH|Invesco Dorsey Wright Healthcare Momentum ETF|G|N|N|100|Y|N
-PTHR|Pono Capital Three, Inc. - Class A Ordinary Shares|G|N|N|100|N|N
-PTHRU|Pono Capital Three, Inc. - Unit|G|N|N|100|N|N
-PTHRW|Pono Capital Three, Inc. - Warrant|G|N|N|100|N|N
 PTIX|Protagenic Therapeutics, Inc. - Common Stock|S|N|D|100|N|N
 PTIXW|Protagenic Therapeutics, Inc. - Warrant|S|N|N|100|N|N
 PTLO|Portillo's Inc. - Class A Common Stock|Q|N|N|100|N|N
@@ -4982,4 +4981,4 @@ ZXZZT|NASDAQ TEST STOCK|G|Y|N|100||N
 ZYME|Zymeworks Inc. - Common Stock|Q|N|N|100|N|N
 ZYXI|Zynex, Inc. - Common Stock|Q|N|N|100|N|N
 ZZZ|Cyber Hornet S&P 500 and Bitcoin 75/25 Strategy ETF|G|N|N|100|Y|N
-File Creation Time: 0112202421:31|||||||
+File Creation Time: 0116202417:01|||||||

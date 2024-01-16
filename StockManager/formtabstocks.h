@@ -62,7 +62,7 @@ signals:
     void signal_select_stock_complete();
 
 private slots:
-    void on_select_stock_complete();
+    void onSelectStockComplete();
 };
 
 #endif // FORMTABSTOCKS_H

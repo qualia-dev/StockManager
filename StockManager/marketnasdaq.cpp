@@ -2,14 +2,17 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 #include "marketnasdaq.h"
 #include "ftpdownloader.h"
 #include "stock.h"
 
-MarketNasdaq::MarketNasdaq()
+MarketNasdaq::MarketNasdaq(SqliteWrap* db)
 {
-
+    _db = db;
+    // initialize current marketplace - TODO : should be done from the values in the database
+    _marketplace = new Marketplace(1, "Nasdaq", "Nasdaq Stock Market", 2, "USA");
 }
 
 bool MarketNasdaq::dwnd_list_securities(const std::string& server, unsigned int port, const std::string& remoteFilePath, const std::string& localFilePath)
@@ -92,6 +95,14 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
     oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");    // convert to YYYY-MM-DD HH:MM:SS
     record_date = oss.str();
 
+    // Get the current time
+    auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    tm = *std::localtime(&now);
+    oss.str("");  // Clear the content of the ostringstream
+    oss.clear();   // Reset the error state flags
+    oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+    std::string last_updated = oss.str();
+
     // prepare the stream to iterate over the vector
     std::stringstream ss;
     for (const auto& line : v_securities) {
@@ -101,7 +112,8 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
     std::string line;
     std::getline(ss, line);  // Skip the first line
 
-    int count = 1;
+    int count = 0;
+    int count_error = 0;
     while (std::getline(ss, line)) {
         std::stringstream line_ss(line);
 
@@ -117,9 +129,7 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
         std::getline(line_ss, round_lot, '|');
         std::getline(line_ss, etf, '|');
         std::getline(line_ss, next_shares, '|');
-        //std::getline(line_ss, record_date, '|');
-
-        std::cout << count << " " << symbol << " " << name << " " << market_category << " " << test_issue << " " << financial_status << " " << round_lot << " " << etf << " " << next_shares << " " << std::endl;
+        next_shares.erase(next_shares.end() - 1);  //remove \r from the end of the string
 
         if (test_issue == "Y") continue;        // Skip test issues
         if (financial_status != "N") continue;  // Normal (Default): Issuer Is NOT Deficient, Delinquent, or Bankrupt.
@@ -127,15 +137,54 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
         if (next_shares != "N") continue;       // Skip NextShares
 
         Stock s;
+        s.setId(-1);
         s.setSymbol(symbol);
         s.setName(name);
-        s.setMarketCategory(market_category);
-        s.setMarketplaceName("Nasdaq");
+        s.setCompanyId(-1);
+        s.setCompanyName("tbd");
+        s.setIsin("NULL");
+        s.setMarketplaceId(_marketplace->id());
+        s.setMarketplaceName(_marketplace->name());
+        if (market_category == "Q" )s.setMarketCategory("Global Select Market");
+        else if (market_category == "G") s.setMarketCategory("Global Market");
+        else if (market_category == "S") s.setMarketCategory("Capital Market");
+        else s.setMarketCategory("Error Not Q-G-S");
         s.setRecordDate(record_date);
+        s.setSourceData("NASDAQ-Listed Securities FTP Download");
+        s.setLastUpdated(last_updated);
 
+        //insert stock in database
+        std::string sql = "INSERT INTO Stock (symbol, name, company_id, ISIN, marketplace_id, marketplace_category, record_date, source_data, last_updated) VALUES ("
+                          "'" + s.symbol() + "', "
+                                         "'" + s.name() + "', ";
 
+        if (s.companyId() == -1) sql += "NULL, ";
+        else sql += std::to_string(s.companyId()) + ", ";
+        //sql += "1, ";
+
+        if (s.isin() == "NULL") sql += s.isin() + ", ";
+        else sql += "'" + s.isin() + "', ";
+        //sql += "'ISIN', ";
+
+        sql += std::to_string(s.marketplaceId()) + ", "
+                        "'" + s.marketCategory() + "', "
+                        "'" + s.recordDate() + "', "
+                        "'" + s.sourceData() + "', "
+                        "'" + s.lastUpdated() + "');";
+
+        bool res = _db->execute_sql(sql);
         count ++;
+
+        if (!res) {
+            std::cerr << "Error inserting stock in database." << std::endl;
+            count_error++;
+            continue;
+        }
+
+        std::cout << "DB Inserted ! " << count << " " << symbol << " " << name << " " << market_category << " " << test_issue << " " << financial_status << " " << round_lot << " " << etf << " " << next_shares << " " << std::endl;
     }
+
+    std::cout << "Total stocks: " << count << " - Inserted : " << count-count_error << " - Error : " << count_error << std::endl;
 
     return false;
 }

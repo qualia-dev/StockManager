@@ -12,3 +12,18 @@ Company::Company (int id, const std::string& name, const std::string& sector, co
 
 }
 
+bool Company::deserialize(char **row, int nb_col)
+{
+    if (nb_col != 6)
+        return false;
+
+    _id = atoi(row[0]);
+    _name = row[1];
+    _sector = row[2];
+    _industry = row[3];
+    _country_id = atoi(row[4]);
+    _country = row[5];
+
+    return true;
+}
+

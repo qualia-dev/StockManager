@@ -30,6 +30,7 @@ public:
     void setCountryId(int countryId) { _country_id = countryId; }
     void setCountry(std::string country) { _country = country; }
 
+    bool deserialize (char** row, int nb_col);
 };
 
 #endif // MARKETPLACE_H

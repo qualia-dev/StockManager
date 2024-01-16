@@ -1,4 +1,5 @@
 #include "stock.h"
+#include <cstring>
 
 Stock::Stock() {}
 
@@ -13,26 +14,35 @@ Stock::Stock(int id, const std::string& symbol, const std::string& name, int _co
 
 }
 
-bool Stock::deserialize(char **row, int nb_col)
+bool Stock::deserialize(char **cols, int nb_col)
 {
     if (nb_col != 12)
         return false;
 
-    _id = atoi(row[0]);
-    _symbol = row[1];
-    _name = row[2];
-    _company_id = atoi(row[3]);
-    _company_name = row[4];
-    _isin = row[5];
-    _marketplace_id = atoi(row[6]);
-    _marketplace_name = row[7];
-    _market_category = row[8];
-    if (row[9] != NULL) _record_date = row[9];
+    _id = atoi(cols[0]);
+    _symbol = cols[1];
+    _name = cols[2];
+
+    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) _company_id = atoi(cols[3]);
+    else _company_id = -1;
+
+    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) _company_name = cols[4];
+    else _company_name = "";
+
+    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) _isin = cols[5];
+    else _isin = "";
+
+    _marketplace_id = atoi(cols[6]);
+    _marketplace_name = cols[7];
+    _market_category = cols[8];
+    if (cols[9] != NULL) _record_date = cols[9];
     else _record_date = "";
-    if (row[9] != NULL) _source_data = row[10];
+    if (cols[9] != NULL) _source_data = cols[10];
     else _source_data = "";
-    if (row[9] != NULL) _last_updated = row[11];
+    if (cols[9] != NULL) _last_updated = cols[11];
     else _last_updated = "";
 
     return true;
 }
+
+
