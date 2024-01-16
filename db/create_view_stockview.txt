@@ -1,0 +1,18 @@
+CREATE VIEW StockView AS
+SELECT
+    Stock.id,
+    Stock.symbol,
+    Stock.name AS stock_name,
+    Company.name_short AS company_name_short,
+    Stock.ISIN,
+    Marketplace.name AS marketplace_name,
+    Stock.marketplace_category,
+    Stock.record_date,
+    Stock.source_data,
+    Stock.last_updated
+FROM
+    Stock
+JOIN
+    Company ON Stock.company_id = Company.id
+JOIN
+    Marketplace ON Stock.marketplace_id = Marketplace.id;

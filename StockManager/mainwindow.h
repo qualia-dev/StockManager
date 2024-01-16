@@ -8,6 +8,8 @@
 
 #include "formtabsettings.h"
 #include "formtabdownload.h"
+#include "formtabdatabase.h"
+#include "formtabstocks.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -34,6 +36,8 @@ public:
 private:
     FormTabSettings* tab_settings = nullptr;
     FormTabDownload* tab_download = nullptr;
+    FormTabDatabase* tab_database = nullptr;
+    FormTabStocks* tab_stocks = nullptr;
 
 };
 #endif // MAINWINDOW_H

@@ -28,7 +28,6 @@ public:
 
 private slots:
     void on_bt_dwnNasdaqSecurities_clicked();
-
     void on_bt_extractSecurities_clicked();
 
 private:

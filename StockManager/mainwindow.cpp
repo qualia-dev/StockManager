@@ -22,15 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_db = new SqliteWrap();
 
-    // create tabs
-    ui->tw_main->removeTab(0);
-//    tab_stocks = new FormTabStocks(db, this);
-//    ui->tw_main->addTab(tab_stocks, "Stocks");
-    tab_settings = new FormTabSettings(m_settings, m_db, this);
-    ui->tw_main->addTab(tab_settings, "Settings");
-    tab_download = new FormTabDownload(m_db, this);
-    ui->tw_main->addTab(tab_download, "Download");
-
     QString path_filename = m_settings->value("db_path").toString() + "/" + m_settings->value("db_name").toString();
 
     if (!m_db->exists(path_filename.toStdString()))
@@ -56,6 +47,17 @@ MainWindow::MainWindow(QWidget *parent)
     // connected to database
     std::cout << "Connected to database: " << path_filename.toStdString() << std::endl;
     ui->te_log->append("Connected to database: " + path_filename);
+
+    // create tabs
+    ui->tw_main->removeTab(0);
+    tab_stocks = new FormTabStocks(m_db, this);
+    ui->tw_main->addTab(tab_stocks, "Stocks");
+    tab_database = new FormTabDatabase(m_db, this);
+    ui->tw_main->addTab(tab_database, "Database");
+    tab_settings = new FormTabSettings(m_settings, m_db, this);
+    ui->tw_main->addTab(tab_settings, "Settings");
+    tab_download = new FormTabDownload(m_db, this);
+    ui->tw_main->addTab(tab_download, "Download");
 
 }
 

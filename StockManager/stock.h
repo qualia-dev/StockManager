@@ -5,49 +5,59 @@
 
 class Stock
 {
-private:
-    std::string m_symbol;
-    std::string m_name;
-    std::string m_company_name;
-    std::string m_marketplace_name;
-    std::string m_market_category;
-    std::string m_record_date;
-    std::string m_source_data;
-
-    // Optional fields
-    std::string m_test_issue;
-    std::string m_financial_status;
-    std::string m_round_lot;
-    std::string m_etf;
-    std::string m_next_shares;
-
 public:
-    Stock(const std::string& symbol, const std::string& name, const std::string& marketplace, const std::string& category);
+    Stock(int id, const std::string& symbol, const std::string& name, int _company_id,  const std::string& company_name,
+          const std::string& isin, int marketplace_id, const std::string& marketplace_name, const std::string&  market_category,
+          const std::string& record_date, const std::string& source_data, const std::string& last_updated);
     Stock();
 
-    void setSymbol(const std::string& symbol) { m_symbol = symbol; }
-    void setName(const std::string& name) { m_name = name; }
-    void setMarketplaceName(const std::string& marketplaceName) { m_marketplace_name = marketplaceName; }
-    void setMarketCategory(const std::string& category) { m_market_category = category; }
-    void setRecordDate(const std::string& date) { m_record_date = date; }
+private:
+    int _id;
+    std::string _symbol;
+    std::string _name;
+    int _company_id;
+    std::string _company_name;
+    std::string _isin;
+    int _marketplace_id;
+    std::string _marketplace_name;
+    std::string _market_category;    // no database table for this
+    std::string _record_date;
+    std::string _source_data;
+    std::string _last_updated;
 
-    void setTestIssue(const std::string& testIssue) { m_test_issue = testIssue; }
-    void setFinancialStatus(const std::string& status) { m_financial_status = status; }
-    void setRoundLot(const std::string& roundLot) { m_round_lot = roundLot; }
-    void setETF(const std::string& etf) { m_etf = etf; }
-    void setNextShares(const std::string& nextShares) { m_next_shares = nextShares; }
 
-    std::string symbol() const { return m_symbol; }
-    std::string name() const { return m_name; }
-    std::string marketplaceName() const { return m_marketplace_name; }  // Getter for the marketplace
-    std::string marketCategory() const { return m_market_category; }
-    std::string recordDate() const { return m_record_date; }
+public:
+    //getters
+    int id() const { return _id; }
+    std::string symbol() const { return _symbol; }
+    std::string name() const { return _name; }
+    int companyId() const { return _company_id; }
+    std::string companyName() const { return _company_name; }
+    std::string isin() const { return _isin; }
+    int marketplaceId() const { return _marketplace_id; }
+    std::string marketplaceName() const { return _marketplace_name; }  // Getter for the marketplace
+    std::string marketCategory() const { return _market_category; }
+    std::string recordDate() const { return _record_date; }
+    std::string sourceData() const { return _source_data; }
+    std::string lastUpdated() const { return _last_updated; }
 
-    std::string testIssue() const { return m_test_issue; }
-    std::string financialStatus() const { return m_financial_status; }
-    std::string roundLot() const { return m_round_lot; }
-    std::string etf() const { return m_etf; }
-    std::string nextShares() const { return m_next_shares; }
+    // setters
+    void setId(int id) { _id = id; }
+    void setSymbol(const std::string& symbol) { _symbol = symbol; }
+    void setName(const std::string& name) { _name = name; }
+    void setCompanyId(int companyId) { _company_id = companyId; }
+    void setCompanyName(const std::string& companyName) { _company_name = companyName; }
+    void setIsin(const std::string& isin) { _isin = isin; }
+    void setMarketplaceId(int marketplaceId) { _marketplace_id = marketplaceId; }
+    void setMarketplaceName(const std::string& marketplaceName) { _marketplace_name = marketplaceName; }
+    void setMarketCategory(const std::string& category) { _market_category = category; }
+    void setRecordDate(const std::string& date) { _record_date = date; }
+    void setSourceData(const std::string& sourceData) { _source_data = sourceData; }
+    void setLastUpdated(const std::string& lastUpdated) { _last_updated = lastUpdated; }
+
+    // function
+    bool deserialize (char** row, int nb_col);
+
 };
 
 #endif // STOCK_H
