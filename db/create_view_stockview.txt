@@ -1,10 +1,11 @@
-CREATE VIEW StockView AS
 SELECT
     Stock.id,
     Stock.symbol,
-    Stock.name AS stock_name,
+    Stock.name,
+    Stock.company_id,
     Company.name_short AS company_name_short,
     Stock.ISIN,
+    Stock.marketplace_id,
     Marketplace.name AS marketplace_name,
     Stock.marketplace_category,
     Stock.record_date,
@@ -12,7 +13,9 @@ SELECT
     Stock.last_updated
 FROM
     Stock
-JOIN
+LEFT JOIN
     Company ON Stock.company_id = Company.id
 JOIN
-    Marketplace ON Stock.marketplace_id = Marketplace.id;
+    Marketplace ON Stock.marketplace_id = Marketplace.id
+WHERE
+    Stock.company_id IS NULL OR Company.id IS NOT NULL

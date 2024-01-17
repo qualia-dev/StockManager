@@ -48,7 +48,14 @@ public:
     explicit FormTabStocks(SqliteWrap* db, QWidget *parent = nullptr);
     ~FormTabStocks();
 
-    static int select_stock_callback(void* user_param, int nb_rows, char** row_values, char** row_names);
+    void refresh_stocks();
+    void update_with_new_data (const std::vector<Stock>& v_stocks);
+    std::vector<Stock> filter_stocks ();
+
+private slots:
+    void on_le_search_textChanged(const QString &arg1);
+    void on_cb_market_category_currentTextChanged(const QString &arg1);
+    void on_cb_marketplaces_currentTextChanged(const QString &arg1);
 
 private:
     Ui::FormTabStocks *ui;
@@ -58,11 +65,6 @@ private:
     std::vector<Stock> _v_stocks;
     int _expected_rows = -1;
 
-signals:
-    void signal_select_stock_complete();
-
-private slots:
-    void onSelectStockComplete();
 };
 
 #endif // FORMTABSTOCKS_H

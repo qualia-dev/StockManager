@@ -1,5 +1,6 @@
 #include "stock.h"
 #include <cstring>
+#include <vector>
 
 Stock::Stock() {}
 
@@ -14,33 +15,39 @@ Stock::Stock(int id, const std::string& symbol, const std::string& name, int _co
 
 }
 
-bool Stock::deserialize(char **cols, int nb_col)
+bool Stock::deserialize (void* user_param, char** cols, int nb_col)
 {
     if (nb_col != 12)
         return false;
 
-    _id = atoi(cols[0]);
-    _symbol = cols[1];
-    _name = cols[2];
+    // because static
+    Stock* st = new Stock();
 
-    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) _company_id = atoi(cols[3]);
-    else _company_id = -1;
+    st->setId (atoi(cols[0]));
+    st->setSymbol (cols[1]);
+    st->setName (cols[2]);
 
-    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) _company_name = cols[4];
-    else _company_name = "";
+    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) st->setCompanyId (atoi(cols[3]));
+    else st->setCompanyId (-1);
 
-    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) _isin = cols[5];
-    else _isin = "";
+    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) st->setCompanyName(cols[4]);
+    else st->setCompanyName("");
 
-    _marketplace_id = atoi(cols[6]);
-    _marketplace_name = cols[7];
-    _market_category = cols[8];
-    if (cols[9] != NULL) _record_date = cols[9];
-    else _record_date = "";
-    if (cols[9] != NULL) _source_data = cols[10];
-    else _source_data = "";
-    if (cols[9] != NULL) _last_updated = cols[11];
-    else _last_updated = "";
+    if (cols[3] != NULL && strcmp(cols[3], "NULL") != 0) st->_isin = cols[5];
+    else st->_isin = "";
+
+    st->_marketplace_id = atoi(cols[6]);
+    st->_marketplace_name = cols[7];
+    st->_market_category = cols[8];
+    if (cols[9] != NULL) st->_record_date = cols[9];
+    else st->_record_date = "";
+    if (cols[9] != NULL) st->_source_data = cols[10];
+    else st->_source_data = "";
+    if (cols[9] != NULL) st->_last_updated = cols[11];
+    else st->_last_updated = "";
+
+    std::vector<Stock>* v_stocks = (std::vector<Stock>*) user_param;
+    v_stocks->push_back(*st);
 
     return true;
 }

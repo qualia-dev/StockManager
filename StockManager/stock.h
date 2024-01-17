@@ -11,7 +11,8 @@ public:
           const std::string& record_date, const std::string& source_data, const std::string& last_updated);
     Stock();
 
-private:
+//private:
+public:
     int _id;
     std::string _symbol;
     std::string _name;
@@ -56,7 +57,7 @@ public:
     void setLastUpdated(const std::string& lastUpdated) { _last_updated = lastUpdated; }
 
     // From db
-    bool deserialize (char** cols, int nb_col);
+    static bool deserialize (void* user_param, char** cols, int nb_col);
 
 };
 

@@ -1,7 +1,10 @@
-#include "mainwindow.h"
-#include "./ui_mainwindow.h"
 #include <iostream>
 #include <ostream>
+
+#include <QShortcut>
+
+#include "mainwindow.h"
+#include "./ui_mainwindow.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -18,6 +21,16 @@ MainWindow::MainWindow(QWidget *parent)
     sizes.append(100);
     ui->splitter->setSizes(sizes);
 
+    toggleLogSplitter();
+
+    QShortcut *shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this);
+    connect(shortcut, &QShortcut::activated, this, &MainWindow::toggleLogSplitter);
+
+    lb_status_icon = new QLabel(this);
+    ui->statusbar->addWidget(lb_status_icon);
+    lb_status_text = new QLabel(this);
+    ui->statusbar->addWidget(lb_status_text);
+
     init_settings();
 
     _db = new SqliteWrap();
@@ -28,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
     {   // Database file does not exist
         std::cout << "Database file does not exist: " << path_filename.toStdString() << std::endl;
         ui->te_log->append("Database file does not exist: " +path_filename);
-
+        set_icon_database(false);
         return;
     }
 
@@ -40,15 +53,18 @@ MainWindow::MainWindow(QWidget *parent)
     {   // error connecting to database
         std::cout << "Error connecting to database: " << path_filename.toStdString() << std::endl;
         ui->te_log->append("Error connecting to database: " +path_filename);
-
+        set_icon_database(false);
         return;
     }
 
     // connected to database
     std::cout << "Connected to database: " << path_filename.toStdString() << std::endl;
     ui->te_log->append("Connected to database: " + path_filename);
+    set_icon_database(true);
+    set_statusbar_text("hello world !");
 
-    // get_database_data();
+    get_marketplaces_from_db(_v_marketplaces);
+    //get_stocks_from_db(_v_stocks);
 
     // create tabs
     create_tabs();
@@ -72,6 +88,21 @@ void MainWindow::create_tabs()
     ui->tw_main->addTab(tab_download, "Download");
 }
 
+void MainWindow::set_statusbar_text(const QString &text)
+{
+    lb_status_text->setText(text);
+}
+
+void MainWindow::set_icon_database(bool connected)
+{
+    if (connected)
+        lb_status_icon->setPixmap(QPixmap(":/ButtonIcons/icons/db-connected.png"));
+    else
+    lb_status_icon->setPixmap(QPixmap(":/ButtonIcons/icons/db-notconnected.png"));
+    lb_status_icon->setScaledContents(true);
+    lb_status_icon->setMaximumSize(20, 20);
+}
+
 void MainWindow::init_settings()
 {
     _settings = new QSettings("qualia", "stockman");  // store in ~/.config/qualia/memo_app.ini.
@@ -90,161 +121,61 @@ void MainWindow::init_settings()
 }
 
 
+void MainWindow::refresh_stocks()
+{
+    tab_stocks->refresh_stocks();
+}
+
+void MainWindow::toggleLogSplitter()
+{
+    // Assuming logSplitter is the name of your QSplitter
+    if (ui->te_log->isVisible())
+    {
+        ui->te_log->hide();
+        ui->splitter->setSizes({ui->splitter->width(), 0 });
+    }
+    else
+    {
+        ui->splitter->setSizes({ 1, 10 });
+        ui->te_log->show();
+    }
+}
+
 // ======================================================================================
-//   The following code is working but it s not good practice to load all data at startup
+//   Database Access
 // ======================================================================================
 
-void MainWindow::get_database_data()
+void MainWindow::get_marketplaces_from_db(std::vector<Marketplace> &v_marketplaces)
 {
-    // get marketplaces from db
     std::string table = "MarketplaceView";
     std::string condition = "";
-    std::string result = "";
 
-    connect(this, &MainWindow::signal_select_marketplace_complete, this, &MainWindow::onSelectMarketplaceComplete);
+    bool rc = _db->select_sync(table, condition, (void*)&v_marketplaces, Marketplace::deserialize);
 
-    _expected_rows = -1;
-    bool rc = _db->select(table, condition , (void*)this, &MainWindow::select_marketplace_callback, _expected_rows);
-    if (!rc)
+    for (auto &mkp : v_marketplaces)
     {
-        std::cerr << "MainWindow::MainWindow - Error: select failed." << std::endl;
-        ui->te_log->append("Error: select failed.");
-        return;
+        std::cout << "id: " << mkp.id() << " - name: " << mkp.name() << " - name_full: " << mkp.name_full() << " - country_id: " << mkp.countryId() << " - country: " << mkp.country() << std::endl;
     }
 }
 
-int MainWindow::select_marketplace_callback(void* user_param, int nb_cols, char** col_values, char** col_names)
+
+
+void MainWindow::get_stocks_from_db(std::vector<Stock> &v_stocks)
 {
-    std::cout << "select_marketplace_callback" << std::endl;
-
-    MainWindow* mw = (MainWindow*) user_param;
-
-    std::string s = "";
-    for (int i = 0; i < nb_cols; i++)   s += " | " + std::string(col_names[i]) + ": " + (col_values[i] ? col_values[i] : "NULL");
-    std::cout << "cols: " << nb_cols << " - " << s << std::endl;
-
-    Marketplace marketplace;
-    if (!marketplace.deserialize (col_values, nb_cols))
-    {
-        std::cerr << "Error: marketplace.deserialize failed." << std::endl;
-        return 1;
-    }
-
-    mw->_v_marketplaces.push_back(marketplace);
-
-    if (mw->_v_marketplaces.size() == mw->_expected_rows)
-    {
-        std::cout << "select marketplace complete - emit signal" << std::endl;
-        emit (mw->signal_select_marketplace_complete());    // select complete
-    }
-
-    return 0;
-}
-
-void MainWindow::onSelectMarketplaceComplete()
-{
-    std::cout << "select marketplace complete - slot for signal" << std::endl;
-    ui->te_log->append("select_marketplace_complete");
-
-    // get companies from db
-    std::string table = "Company";
-    std::string condition = "";
-    std::string result = "";
-
-    connect(this, &MainWindow::signal_select_company_complete, this, &MainWindow::onSelectCompanyComplete);
-
-    _expected_rows = -1;
-    bool rc = _db->select(table, condition , (void*)this, &MainWindow::select_company_callback, _expected_rows);
-    if (!rc)
-    {
-        std::cerr << "MainWindow::MainWindow - Error: select failed." << std::endl;
-        ui->te_log->append("Error: select failed.");
-        return;
-    }
-}
-
-int MainWindow::select_company_callback(void* user_param, int nb_cols, char** col_values, char** col_names)
-{
-    std::cout << "select_company_callback" << std::endl;
-
-    MainWindow* mw = (MainWindow*) user_param;
-
-    std::string s = "";
-    for (int i = 0; i < nb_cols; i++)   s += " | " + std::string(col_names[i]) + ": " + (col_values[i] ? col_values[i] : "NULL");
-    std::cout << "cols: " << nb_cols << " - " << s << std::endl;
-
-    Company company;
-    if (!company.deserialize (col_values, nb_cols))
-    {
-        std::cerr << "Error: company.deserialize failed." << std::endl;
-        return 1;
-    }
-
-    mw->_v_companies.push_back(company);
-
-    if (mw->_v_companies.size() == mw->_expected_rows)
-    {
-        std::cout << "select company complete - emit signal" << std::endl;
-        emit (mw->signal_select_company_complete());    // select complete
-    }
-
-    return 0;
-}
-
-void MainWindow::onSelectCompanyComplete()
-{
-    std::cout << "select company complete - slot for signal" << std::endl;
-    ui->te_log->append("select_company_complete");
-
-    // get stocks from db
     std::string table = "StockView";
     std::string condition = "";
-    std::string result = "";
 
-    connect(this, &MainWindow::signal_select_stock_complete, this, &MainWindow::onSelectStockComplete);
+    bool rc = _db->select_sync(table, condition, (void*)&v_stocks, Stock::deserialize);
 
-    _expected_rows = -1;
-    bool rc = _db->select(table, condition , (void*)this, &MainWindow::select_stock_callback, _expected_rows);
-    if (!rc)
-    {
-        std::cerr << "MainWindow::MainWindow - Error: select failed." << std::endl;
-        ui->te_log->append("Error: select failed.");
-        return;
-    }
+    // for (auto &st : v_stocks)
+    // {
+    //     std::cout << "id: " << st.id() << " - name: " << st.name() << std::endl;
+    // }
 }
 
-int MainWindow::select_stock_callback(void* user_param, int nb_cols, char** col_values, char** col_names)
-{
-    std::cout << "select_stock_callback" << std::endl;
 
-    MainWindow* mw = (MainWindow*) user_param;
 
-    std::string s = "";
-    for (int i = 0; i < nb_cols; i++)   s += " | " + std::string(col_names[i]) + ": " + (col_values[i] ? col_values[i] : "NULL");
-    std::cout << "cols: " << nb_cols << " - " << s << std::endl;
 
-    Stock stock;
-    if (!stock.deserialize (col_values, nb_cols))
-    {
-        std::cerr << "Error: stock.deserialize failed." << std::endl;
-        return 1;
-    }
 
-    mw->_v_stocks.push_back(stock);
-
-    if (mw->_v_stocks.size() == mw->_expected_rows)
-    {
-        std::cout << "select stock complete - emit signal" << std::endl;
-        emit (mw->signal_select_stock_complete());    // select complete
-    }
-
-    return 0;
-}
-
-void MainWindow::onSelectStockComplete()
-{
-    std::cout << "select stock complete - slot for signal" << std::endl;
-    ui->te_log->append("select_stock_complete");
-}
 
 

@@ -26,7 +26,7 @@ bool MarketNasdaq::dwnd_list_securities(const std::string& server, unsigned int 
     else
     {
         std::cout << "Failed to download file from FTP server: " << remoteFilePath << std::endl;
-        return true;
+        return false;
     }
 
     std::vector<char> buff_securities = ftp_downloader.buffer();
@@ -51,7 +51,7 @@ bool MarketNasdaq::extract_securities_from_file()
     std::ifstream file(file_path, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
         std::cerr << "Error opening file: " << file_path << std::endl;
-        return true;
+        return false;
     }
 
     file.seekg(0, std::ios::beg);               // Move back to the beginning
@@ -71,7 +71,7 @@ bool MarketNasdaq::extract_securities_from_file()
 
 bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
 {
-    if (v_securities.empty()) return false;
+    if (v_securities.empty()) return true;  // it s not an error
 
     // get the last line containing date-time of the dataset, extract date-time and format to YYYY-MM-DD HH:MM:SS
     std::string record_date = v_securities.back();
@@ -123,6 +123,23 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
         // Extract fields from each line
         std::getline(line_ss, symbol, '|');
         std::getline(line_ss, name, '|');
+
+        // name contains the type of security (Common Stock, Common Shares, Warrant ...)
+        // it is located after the name separated by ' - '
+        // keep only 'Common Stock'
+        size_t lastDashPos = name.rfind('-');
+        if (lastDashPos != std::string::npos && name.substr(lastDashPos + 1).find("Common Stock") != std::string::npos) {
+            // Remove " - Common Stock" from the name
+            name = name.substr(0, lastDashPos);
+
+            // remove trailing spaces from name
+            name.erase(name.find_last_not_of(" \t\r\n") + 1);
+        }
+        else {
+            // skip this line
+            continue;
+        }
+
         std::getline(line_ss, market_category, '|');
         std::getline(line_ss, test_issue, '|');
         std::getline(line_ss, financial_status, '|');
@@ -186,7 +203,7 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
 
     std::cout << "Total stocks: " << count << " - Inserted : " << count-count_error << " - Error : " << count_error << std::endl;
 
-    return false;
+    return true;
 }
 
 

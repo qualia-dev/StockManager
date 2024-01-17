@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QSettings>
 
+#include "qlabel.h"
 #include "sqlitewrap.h"
 #include "marketplace.h"
 #include "company.h"
@@ -30,38 +31,34 @@ public:
 private:
     void init_settings();
     void create_tabs();
-    void get_database_data();
-
-    static int select_marketplace_callback(void* user_param, int nb_rows, char** row_values, char** row_names);
-    static int select_company_callback(void* user_param, int nb_rows, char** row_values, char** row_names);
-    static int select_stock_callback(void* user_param, int nb_rows, char** row_values, char** row_names);
-
-signals:
-    void signal_select_marketplace_complete();
-    void signal_select_company_complete();
-    void signal_select_stock_complete();
+    void set_statusbar_text(const QString& text);
+    void set_icon_database(bool connected);
 
 private slots:
-    void onSelectMarketplaceComplete();
-    void onSelectCompanyComplete();
-    void onSelectStockComplete();
+    void toggleLogSplitter();
+
+public:
+    void get_marketplaces_from_db(std::vector<Marketplace> &v_marketplaces);
+    void get_stocks_from_db(std::vector<Stock> &v_stocks);
+
+    void refresh_stocks();
 
 public:
     Ui::MainWindow *ui = nullptr;
     QSettings* _settings = nullptr;
     SqliteWrap* _db = nullptr;
 
+    std::vector<Marketplace> _v_marketplaces;
+    std::vector<Company> _v_companies;
+    std::vector<Stock> _v_stocks;
+
 private:
+    QLabel* lb_status_icon = nullptr;
+    QLabel* lb_status_text = nullptr;
     FormTabSettings* tab_settings = nullptr;
     FormTabDownload* tab_download = nullptr;
     FormTabDatabase* tab_database = nullptr;
     FormTabStocks* tab_stocks = nullptr;
-
-    int _expected_rows = -1;
-
-    std::vector<Marketplace> _v_marketplaces;
-    std::vector<Company> _v_companies;
-    std::vector<Stock> _v_stocks;
 
 
 };

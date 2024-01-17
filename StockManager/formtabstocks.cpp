@@ -14,21 +14,46 @@ FormTabStocks::FormTabStocks(SqliteWrap* db, QWidget *parent)
     _mw = (MainWindow*) parent;
     _db = db;
 
-    // get stocks from db
-    std::string table = "StockView";
-    std::string condition = "";
-    std::string result = "";
+    _mw->get_stocks_from_db(_v_stocks);
 
-    connect(this, &FormTabStocks::signal_select_stock_complete, this, &FormTabStocks::onSelectStockComplete);
-
-    _expected_rows = -1;
-    bool rc = _db->select(table, condition , (void*)this, &FormTabStocks::select_stock_callback, _expected_rows);
-    if (!rc)
-    {
-        std::cerr << "FormTabStocks::FormTabStocks - Error: select failed." << std::endl;
-        _mw->ui->te_log->append("Error: select failed.");
-        return;
+    // get the different values for category field in _v_stocks
+    ui->cb_market_category->addItem("All");
+    std::vector<std::string> v_market_categories;
+    for (const Stock& stock : _v_stocks) {
+        if (std::find(v_market_categories.begin(), v_market_categories.end(), stock.marketCategory()) == v_market_categories.end()) {
+            v_market_categories.push_back(stock.marketCategory());
+            ui->cb_market_category->addItem(QString::fromStdString(stock.marketCategory()));
+        }
     }
+    // get the different values for market field in _v_stocks
+    ui->cb_marketplaces->addItem("All");
+    std::vector<std::string> v_marketplaces;
+    for (const Stock& stock : _v_stocks) {
+        if (std::find(v_marketplaces.begin(), v_marketplaces.end(), stock.marketplaceName()) == v_marketplaces.end()) {
+            v_marketplaces.push_back(stock.marketplaceName());
+            ui->cb_marketplaces->addItem(QString::fromStdString(stock.marketplaceName()));
+        }
+    }
+
+    // set the qtableview
+    ui->tv_stocks->setAlternatingRowColors(true);
+    ui->tv_stocks->horizontalHeader()->setFixedHeight(22);
+    ui->tv_stocks->verticalHeader()->setDefaultSectionSize(20);     // set the heights of the cells
+
+    // create model
+    _stocks_model = new StockModel(this);
+    _stocks_model->setSize(_v_stocks.size(), 5);
+    _stocks_model->setData(_v_stocks);
+    ui->tv_stocks->setModel(_stocks_model);
+    ui->lb_nb_records->setText(QString::number(_v_stocks.size()) + " records");
+
+    // to set an original column size and keep the interactive capability
+    ui->tv_stocks->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
+    ui->tv_stocks->setColumnWidth(0, 50);
+    ui->tv_stocks->setColumnWidth(1, 350);
+    ui->tv_stocks->setColumnWidth(2, 100);
+    ui->tv_stocks->setColumnWidth(3, 200);
+    ui->tv_stocks->setColumnWidth(4, 200);
 }
 
 FormTabStocks::~FormTabStocks()
@@ -36,52 +61,77 @@ FormTabStocks::~FormTabStocks()
     delete ui;
 }
 
-
-int FormTabStocks::select_stock_callback(void* user_param, int nb_cols, char** col_values, char** col_names)
+/*! \brief
+ *
+ *  refresh the stocks table with the content of the db
+ *
+ *  \param none
+ *  \return none
+ */
+void FormTabStocks::refresh_stocks()     // reload from the database
 {
-    FormTabStocks* form = (FormTabStocks*) user_param;
-
-    std::string s = "";
-    for (int i = 0; i < nb_cols; i++)   s += " | " + std::string(col_names[i]) + ": " + (col_values[i] ? col_values[i] : "NULL");
-    std::cout << "cols: " << nb_cols << " - " << s << std::endl;
-
-    Stock stock;
-    if (!stock.deserialize (col_values, nb_cols))
-    {
-        std::cerr << "Error: stock.deserialize failed." << std::endl;
-        return 1;
-    }
-
-    form->_v_stocks.push_back(stock);
-
-    if (form->_v_stocks.size() == form->_expected_rows)
-        emit (form->signal_select_stock_complete());    // select complete
-
-    return 0;
-}
-
-void FormTabStocks::onSelectStockComplete()
-{
-    _mw->ui->te_log->append("select_stock_complete");
-
-    ui->tv_stocks->setAlternatingRowColors(true);
-    //ui->tv_stocks->horizontalHeader()->setFixedHeight(40);
-    //ui->tv_stocks->horizontalHeader()->setVisible(true);
-
-    // create model
+    delete (_stocks_model);
     _stocks_model = new StockModel(this);
-    _stocks_model->setSize(_expected_rows, 5);
+
+    _mw->get_stocks_from_db(_v_stocks);
+    _stocks_model->setSize(_v_stocks.size(), 5);
     _stocks_model->setData(_v_stocks);
     ui->tv_stocks->setModel(_stocks_model);
-
-    // to set an original column size and keep the interactive capability
-    ui->tv_stocks->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
-    ui->tv_stocks->setColumnWidth(0, 50);
-    ui->tv_stocks->setColumnWidth(1, 250);
-    ui->tv_stocks->setColumnWidth(2, 100);
-    ui->tv_stocks->setColumnWidth(3, 200);
-    ui->tv_stocks->setColumnWidth(4, 200);
+    ui->lb_nb_records->setText(QString::number(_v_stocks.size()) + " records");
 }
+
+void FormTabStocks::update_with_new_data (const std::vector<Stock>& v_stocks)
+{
+    delete (_stocks_model);
+    _stocks_model = new StockModel(this);
+    _stocks_model->setSize(v_stocks.size(), 5);
+    _stocks_model->setData(v_stocks);
+    ui->tv_stocks->setModel(_stocks_model);
+    ui->lb_nb_records->setText(QString::number(v_stocks.size()) + " records");
+}
+
+void FormTabStocks::on_le_search_textChanged(const QString &arg1)
+{
+    update_with_new_data(filter_stocks());
+}
+
+
+void FormTabStocks::on_cb_market_category_currentTextChanged(const QString &arg1)
+{
+    update_with_new_data(filter_stocks());
+}
+
+
+void FormTabStocks::on_cb_marketplaces_currentTextChanged(const QString &arg1)
+{
+    update_with_new_data(filter_stocks());
+}
+
+std::vector<Stock> FormTabStocks::filter_stocks ()
+{
+    QString marketplace = ui->cb_marketplaces->currentText().trimmed();
+    QString market_category = ui->cb_market_category->currentText().trimmed();
+    QString search_text = ui->le_search->text().trimmed().toLower();
+    std::vector<Stock> v_search_results;
+
+    for (const Stock &stock : _v_stocks) {
+        QString stock_marketplace_name_lower = QString::fromStdString(stock.marketplaceName());
+        QString stock_market_category_lower = QString::fromStdString(stock.marketCategory());
+        QString stock_name_lower = QString::fromStdString(stock.name()).toLower();
+        QString stock_symbol_lower = QString::fromStdString(stock.symbol()).toLower();
+
+        bool isMarketplaceMatch = (marketplace == "All") || stock_marketplace_name_lower.contains(marketplace);
+        bool isMarketCategoryMatch = (market_category == "All") || stock_market_category_lower.contains(market_category);
+        bool isSearchMatch = stock_name_lower.contains(search_text) || stock_symbol_lower.contains(search_text);
+
+        if (isMarketplaceMatch && isMarketCategoryMatch && isSearchMatch) {
+            v_search_results.push_back(stock);
+        }
+    }
+
+    return v_search_results;
+}
+
 
 QVariant StockModel::data(const QModelIndex &index, int role) const
 {
@@ -110,7 +160,7 @@ QVariant StockModel::data(const QModelIndex &index, int role) const
     }
     else if(role == Qt::TextAlignmentRole)
     {
-        return Qt::AlignLeft;
+        return int(Qt::AlignLeft | Qt::AlignVCenter);
     }
 
     return QVariant();
@@ -131,32 +181,37 @@ void StockModel::setData(const std::vector<Stock>& stocks)
 
 QVariant StockModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    // if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-    //     // Provide header text for each column
-    //     switch (section) {
-    //     case 0:
-    //         return tr("First Name");
-    //     case 1:
-    //         return tr("Last Name");
-    //     case 2:
-    //         return tr("Sex");
-    //     case 3:
-    //         return tr("Email");
-    //     case 4:
-    //         return tr("Phone");
-    //     default:
-    //         return QVariant();
-    //     }
+    if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+        // Provide header text for each column
+        switch (section) {
+        case 0:
+            return tr("Id");
+        case 1:
+            return tr("Name");
+        case 2:
+            return tr("Symbol");
+        case 3:
+            return tr("Market");
+        case 4:
+            return tr("Type");
+        default:
+            return QVariant();
+        }
 
-    //     if ((role == Qt::ToolTipRole) && (orientation == Qt::Horizontal)) {
+        if ((role == Qt::ToolTipRole) && (orientation == Qt::Horizontal)) {
 
-    //     }
+        }
 
-    //     if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
-    //         return section + 1;
-    //     }
-    // }
+        if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
+            return section + 1;
+        }
+    }
 
     return QVariant();
 }
+
+
+
+
+
 

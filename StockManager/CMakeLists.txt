@@ -39,6 +39,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         formtabdatabase.h formtabdatabase.cpp formtabdatabase.ui
         formtabstocks.h formtabstocks.cpp formtabstocks.ui
         dlgexecutesql.h dlgexecutesql.cpp dlgexecutesql.ui
+        resources.qrc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET StockMan APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/ButtonIcons">
+        <file>icons/db-notconnected.png</file>
+        <file>icons/db-connected.png</file>
+    </qresource>
+</RCC>
