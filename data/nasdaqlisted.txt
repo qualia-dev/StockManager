@@ -480,7 +480,7 @@ AVTE|Aerovate Therapeutics, Inc. - Common Stock|G|N|N|100|N|N
 AVTX|Avalo Therapeutics, Inc. - Common Stock|S|N|D|100|N|N
 AVXL|Anavex Life Sciences Corp. - Common Stock|Q|N|N|100|N|N
 AWH|Aspira Women's Health Inc. - Common Stock|S|N|N|100|N|N
-AWIN|AERWINS Technologies Inc. - Common Stock|G|N|D|100|N|N
+AWIN|AERWINS Technologies Inc. - Common Stock|S|N|D|100|N|N
 AWINW|AERWINS Technologies Inc. - Warrant|S|N|N|100|N|N
 AWRE|Aware, Inc. - Common Stock|G|N|N|100|N|N
 AXDX|Accelerate Diagnostics, Inc. - Common Stock|S|N|N|100|N|N
@@ -648,9 +648,9 @@ BND|Vanguard Total Bond Market ETF|G|N|N|100|Y|N
 BNDW|Vanguard Total World Bond ETF|G|N|N|100|Y|N
 BNDX|Vanguard Total International Bond ETF|G|N|N|100|Y|N
 BNGO|Bionano Genomics, Inc. - Common Stock|S|N|N|100|N|N
-BNIX|Bannix Acquisition Corp. - Common Stock|S|N|N|100|N|N
-BNIXR|Bannix Acquisition Corp. - Right|S|N|N|100|N|N
-BNIXW|Bannix Acquisition Corp. - Warrant|S|N|N|100|N|N
+BNIX|Bannix Acquisition Corp. - Common Stock|S|N|D|100|N|N
+BNIXR|Bannix Acquisition Corp. - Right|S|N|D|100|N|N
+BNIXW|Bannix Acquisition Corp. - Warrant|S|N|D|100|N|N
 BNOX|Bionomics Limited - American Depository Shares|G|N|N|100|N|N
 BNR|Burning Rock Biotech Limited - American Depositary Shares|G|N|D|100|N|N
 BNRG|Brenmiller Energy Ltd - Ordinary Shares|S|N|N|100|N|N
@@ -865,6 +865,7 @@ CCOI|Cogent Communications Holdings, Inc. - Common Stock|Q|N|N|100|N|N
 CCRN|Cross Country Healthcare, Inc. - Common Stock|Q|N|N|100|N|N
 CCSI|Consensus Cloud Solutions, Inc. - Common Stock|Q|N|N|100|N|N
 CCSO|Carbon Collective Climate Solutions U.S. Equity ETF|G|N|N|100|Y|N
+CCTG|CCSC Technology International Holdings Limited - Ordinary Shares|S|N|N|100|N|N
 CCTS|Cactus Acquisition Corp. 1 Limited - Class A Ordinary Share|G|N|D|100|N|N
 CCTSU|Cactus Acquisition Corp. 1 Limited - Unit|G|N|D|100|N|N
 CCTSW|Cactus Acquisition Corp. 1 Limited - Warrant|G|N|D|100|N|N
@@ -2068,7 +2069,7 @@ HBT|HBT Financial, Inc. - Common Stock|Q|N|N|100|N|N
 HCAT|Health Catalyst, Inc - Common stock|Q|N|N|100|N|N
 HCKT|The Hackett Group, Inc. - Common Stock|Q|N|N|100|N|N
 HCM|HUTCHMED (China) Limited - American Depositary Shares|Q|N|N|100|N|N
-HCMA|HCM Acquisition Corp - Class A Ordinary Shares|G|N|N|100|N|N
+HCMA|HCM Acquisition Corp - Class A Ordinary Shares|G|N|D|100|N|N
 HCMAU|HCM Acquisition Corp - Unit|G|N|N|100|N|N
 HCMAW|HCM Acquisition Corp - Warrant|G|N|N|100|N|N
 HCOW|Amplify Cash Flow High Income ETF|G|N|N|100|Y|N
@@ -2564,7 +2565,7 @@ KSCP|Knightscope, Inc. - Class A Common Stock|G|N|D|100|N|N
 KTCC|Key Tronic Corporation - Common Stock|G|N|N|100|N|N
 KTOS|Kratos Defense & Security Solutions, Inc. - Common Stock|Q|N|N|100|N|N
 KTRA|Kintara Therapeutics, Inc. - Common Stock|S|N|D|100|N|N
-KTTA|Pasithea Therapeutics Corp. - Common Stock|S|N|D|100|N|N
+KTTA|Pasithea Therapeutics Corp. - Common Stock|S|N|N|100|N|N
 KTTAW|Pasithea Therapeutics Corp. - Warrant|S|N|N|100|N|N
 KURA|Kura Oncology, Inc. - Common Stock|Q|N|N|100|N|N
 KVAC|Keen Vision Acquisition Corporation - Ordinary Shares|G|N|N|100|N|N
@@ -3109,7 +3110,7 @@ NKSH|National Bankshares, Inc. - Common Stock|S|N|N|100|N|N
 NKTR|Nektar Therapeutics - Common Stock|S|N|D|100|N|N
 NKTX|Nkarta, Inc. - Common Stock|Q|N|N|100|N|N
 NLSP|NLS Pharmaceutics Ltd. - Common Shares|S|N|D|100|N|N
-NLSPW|NLS Pharmaceutics Ltd. - Warrant|S|N|N|100|N|N
+NLSPW|NLS Pharmaceutics Ltd. - Warrant|S|N|D|100|N|N
 NMFC|New Mountain Finance Corporation - Common Stock|Q|N|N|100|N|N
 NMFCZ|New Mountain Finance Corporation - 8.250% Notes due 2028|G|N|N|100|N|N
 NMIH|NMI Holdings Inc - Common Stock|G|N|N|100|N|N
@@ -3296,7 +3297,7 @@ OMER|Omeros Corporation - Common Stock|G|N|N|100|N|N
 OMEX|Odyssey Marine Exploration, Inc. - Common Stock|S|N|E|100|N|N
 OMGA|Omega Therapeutics, Inc. - Common Stock|Q|N|N|100|N|N
 OMH|Ohmyhome Limited - Ordinary Shares|S|N|N|100|N|N
-OMIC|Singular Genomics Systems, Inc. - Common Stock|Q|N|D|100|N|N
+OMIC|Singular Genomics Systems, Inc. - Common Stock|S|N|D|100|N|N
 OMQS|OMNIQ Corp. - Common Stock|S|N|D|100|N|N
 ON|ON Semiconductor Corporation - Common Stock|Q|N|N|100|N|N
 ONB|Old National Bancorp - Common Stock|Q|N|N|100|N|N
@@ -4335,7 +4336,7 @@ TBIO|Telesis Bio, Inc. - Common Stock|Q|N|D|100|N|N
 TBLA|Taboola.com Ltd. - Ordinary Shares|Q|N|N|100|N|N
 TBLAW|Taboola.com Ltd. - Warrant|Q|N|N|100|N|N
 TBLD|Thornburg Income Builder Opportunities Trust - Closed End Fund|Q|N|N|100|N|N
-TBLT|ToughBuilt Industries, Inc. - Common Stock|S|N|D|100|N|N
+TBLT|ToughBuilt Industries, Inc. - Common Stock|S|N|N|100|N|N
 TBMC|Trailblazer Merger Corporation I - Class A Common Stock|G|N|N|100|N|N
 TBMCR|Trailblazer Merger Corporation I - Rights|G|N|N|100|N|N
 TBNK|Territorial Bancorp Inc. - Common Stock|Q|N|N|100|N|N
@@ -4449,7 +4450,7 @@ TOMZ|TOMI Environmental Solutions, Inc. - Common Stock|S|N|N|100|N|N
 TOP|TOP Financial Group Limited - Ordinary Shares|S|N|N|100|N|N
 TOPS|TOP Ships Inc. - Common Stock|S|N|N|100|N|N
 TORO|Toro Corp. - Common stock|S|N|N|100|N|N
-TOUR|Tuniu Corporation - American Depositary Shares|G|N|N|100|N|N
+TOUR|Tuniu Corporation - American Depositary Shares|G|N|D|100|N|N
 TOWN|Towne Bank - Common Stock|Q|N|N|100|N|N
 TPCS|TechPrecision Corporation - Common stock|S|N|N|100|N|N
 TPG|TPG Inc. - Class A Common Stock|Q|N|N|100|N|N
@@ -4980,4 +4981,4 @@ ZXZZT|NASDAQ TEST STOCK|G|Y|N|100||N
 ZYME|Zymeworks Inc. - Common Stock|Q|N|N|100|N|N
 ZYXI|Zynex, Inc. - Common Stock|Q|N|N|100|N|N
 ZZZ|Cyber Hornet S&P 500 and Bitcoin 75/25 Strategy ETF|G|N|N|100|Y|N
-File Creation Time: 0117202411:01|||||||
+File Creation Time: 0118202411:01|||||||

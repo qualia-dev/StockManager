@@ -34,9 +34,9 @@ private:
     void dwn_nasdaq_securities_list();
 
 private:
-    Ui::FormTabDownload *ui;
-    MainWindow* _mw;
-    SqliteWrap* _db;
+    Ui::FormTabDownload *ui = nullptr;
+    MainWindow* _mw = nullptr;
+    SqliteWrap* _db = nullptr;
 
 };
 

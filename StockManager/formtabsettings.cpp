@@ -14,6 +14,9 @@ FormTabSettings::FormTabSettings(QSettings* _settings, SqliteWrap* _db, QWidget 
     m_settings = _settings;
     m_db = _db;
 
+    ui->le_db_path->setText(m_settings->value("db_path").toString());
+    ui->le_db_name->setText(m_settings->value("db_name").toString());
+
     m_path_filename = m_settings->value("db_path").toString() + "/" + m_settings->value("db_name").toString();
 
     if (!m_db->exists(m_path_filename.toStdString()))
@@ -84,8 +87,14 @@ void FormTabSettings::on_bt_connect_clicked()
     m_path_filename = m_settings->value("db_path").toString() + "/" + m_settings->value("db_name").toString();
 
     if (!m_db->connect(m_path_filename.toStdString()))
+    {
         mw->ui->te_log->append("Error connecting to Db: " + m_path_filename);
+        mw->set_connection_database(false);
+    }
     else
+    {
         mw->ui->te_log->append("Connected to db: " + m_path_filename);
+        mw->set_connection_database(true);
+    }
 }
 

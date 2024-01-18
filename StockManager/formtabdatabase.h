@@ -22,10 +22,14 @@ public:
 private slots:
     void on_bt_execute_sql_clicked();
 
+    void on_bt_save_db_schema_clicked();
+
+    void on_bt_execute_sql_schema_clicked();
+
 private:
-    Ui::FormTabDatabase *ui;
-    MainWindow* _mw;
-    SqliteWrap* _db;
+    Ui::FormTabDatabase *ui = nullptr;
+    MainWindow* _mw = nullptr;
+    SqliteWrap* _db = nullptr;
 };
 
 #endif // FORMTABDATABASE_H

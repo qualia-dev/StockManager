@@ -21,7 +21,7 @@ private slots:
     void on_bt_execute_clicked();
 
 private:
-    Ui::DlgExecuteSQL *ui;
+    Ui::DlgExecuteSQL *ui = nullptr;
     SqliteWrap* _db = nullptr;
 };
 

@@ -28,31 +28,33 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public:
+    bool is_db_connected() { return _db_connected; }
+    void get_marketplaces_from_db(std::vector<Marketplace> &v_marketplaces);
+    void get_stocks_from_db(std::vector<Stock> &v_stocks);
+    void refresh_stocks();
+    void set_connection_database(bool connected);
+
 private:
     void init_settings();
     void create_tabs();
     void set_statusbar_text(const QString& text);
-    void set_icon_database(bool connected);
 
 private slots:
     void toggleLogSplitter();
 
 public:
-    void get_marketplaces_from_db(std::vector<Marketplace> &v_marketplaces);
-    void get_stocks_from_db(std::vector<Stock> &v_stocks);
-
-    void refresh_stocks();
-
-public:
     Ui::MainWindow *ui = nullptr;
+
+private:
     QSettings* _settings = nullptr;
     SqliteWrap* _db = nullptr;
+    bool _db_connected = false;
 
     std::vector<Marketplace> _v_marketplaces;
     std::vector<Company> _v_companies;
     std::vector<Stock> _v_stocks;
 
-private:
     QLabel* lb_status_icon = nullptr;
     QLabel* lb_status_text = nullptr;
     FormTabSettings* tab_settings = nullptr;

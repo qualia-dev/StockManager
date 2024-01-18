@@ -1,3 +1,5 @@
+
+
 #include "formtabstocks.h"
 #include "ui_formtabstocks.h"
 
@@ -14,40 +16,17 @@ FormTabStocks::FormTabStocks(SqliteWrap* db, QWidget *parent)
     _mw = (MainWindow*) parent;
     _db = db;
 
-    _mw->get_stocks_from_db(_v_stocks);
-
-    // get the different values for category field in _v_stocks
-    ui->cb_market_category->addItem("All");
-    std::vector<std::string> v_market_categories;
-    for (const Stock& stock : _v_stocks) {
-        if (std::find(v_market_categories.begin(), v_market_categories.end(), stock.marketCategory()) == v_market_categories.end()) {
-            v_market_categories.push_back(stock.marketCategory());
-            ui->cb_market_category->addItem(QString::fromStdString(stock.marketCategory()));
-        }
-    }
-    // get the different values for market field in _v_stocks
-    ui->cb_marketplaces->addItem("All");
-    std::vector<std::string> v_marketplaces;
-    for (const Stock& stock : _v_stocks) {
-        if (std::find(v_marketplaces.begin(), v_marketplaces.end(), stock.marketplaceName()) == v_marketplaces.end()) {
-            v_marketplaces.push_back(stock.marketplaceName());
-            ui->cb_marketplaces->addItem(QString::fromStdString(stock.marketplaceName()));
-        }
-    }
+    if (!_mw->is_db_connected()) return;
 
     // set the qtableview
     ui->tv_stocks->setAlternatingRowColors(true);
     ui->tv_stocks->horizontalHeader()->setFixedHeight(22);
     ui->tv_stocks->verticalHeader()->setDefaultSectionSize(20);     // set the heights of the cells
+    ui->tv_stocks->setSortingEnabled(true);
 
-    // create model
-    _stocks_model = new StockModel(this);
-    _stocks_model->setSize(_v_stocks.size(), 5);
-    _stocks_model->setData(_v_stocks);
-    ui->tv_stocks->setModel(_stocks_model);
-    ui->lb_nb_records->setText(QString::number(_v_stocks.size()) + " records");
+    set_tvstocks_model_from_db();   // create model, set the data, populate combo boxes
 
-    // to set an original column size and keep the interactive capability
+    // set original columns size and keep the interactive capability
     ui->tv_stocks->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
     ui->tv_stocks->setColumnWidth(0, 50);
     ui->tv_stocks->setColumnWidth(1, 350);
@@ -61,54 +40,77 @@ FormTabStocks::~FormTabStocks()
     delete ui;
 }
 
-/*! \brief
- *
- *  refresh the stocks table with the content of the db
- *
- *  \param none
- *  \return none
- */
-void FormTabStocks::refresh_stocks()     // reload from the database
+void FormTabStocks::populate_combobox ()
 {
-    delete (_stocks_model);
-    _stocks_model = new StockModel(this);
-
-    _mw->get_stocks_from_db(_v_stocks);
-    _stocks_model->setSize(_v_stocks.size(), 5);
-    _stocks_model->setData(_v_stocks);
-    ui->tv_stocks->setModel(_stocks_model);
-    ui->lb_nb_records->setText(QString::number(_v_stocks.size()) + " records");
+    // get the different values for category field in _v_stocks
+    ui->cb_market_category->clear();
+    ui->cb_market_category->addItem("All");
+    std::vector<std::string> v_market_categories;
+    for (const Stock& stock : _v_stocks) {
+        if (std::find(v_market_categories.begin(), v_market_categories.end(), stock.marketCategory()) == v_market_categories.end()) {
+            v_market_categories.push_back(stock.marketCategory());
+            ui->cb_market_category->addItem(QString::fromStdString(stock.marketCategory()));
+        }
+    }
+    // get the different values for market field in _v_stocks
+    ui->cb_marketplaces->clear();
+    ui->cb_marketplaces->addItem("All");
+    std::vector<std::string> v_marketplaces;
+    for (const Stock& stock : _v_stocks) {
+        if (std::find(v_marketplaces.begin(), v_marketplaces.end(), stock.marketplaceName()) == v_marketplaces.end()) {
+            v_marketplaces.push_back(stock.marketplaceName());
+            ui->cb_marketplaces->addItem(QString::fromStdString(stock.marketplaceName()));
+        }
+    }
 }
 
-void FormTabStocks::update_with_new_data (const std::vector<Stock>& v_stocks)
+
+void FormTabStocks::set_tvstocks_model_from_db()
+{
+    _mw->get_stocks_from_db(_v_stocks);
+    populate_combobox();
+
+    set_tvstocks_model_data (_v_stocks);
+}
+
+
+void FormTabStocks::set_tvstocks_model_data (const std::vector<Stock>& v_stocks)
 {
     delete (_stocks_model);
     _stocks_model = new StockModel(this);
     _stocks_model->setSize(v_stocks.size(), 5);
+    sort_proxy_model = new QSortFilterProxyModel(this);
+    sort_proxy_model->setDynamicSortFilter(true);
+    sort_proxy_model->setSourceModel(_stocks_model);
     _stocks_model->setData(v_stocks);
-    ui->tv_stocks->setModel(_stocks_model);
+    ui->tv_stocks->setModel(sort_proxy_model);
     ui->lb_nb_records->setText(QString::number(v_stocks.size()) + " records");
+    ui->tv_stocks->sortByColumn(1, Qt::SortOrder::AscendingOrder);
 }
+
 
 void FormTabStocks::on_le_search_textChanged(const QString &arg1)
 {
-    update_with_new_data(filter_stocks());
+    set_tvstocks_model_data(filter_stocks());
 }
 
 
 void FormTabStocks::on_cb_market_category_currentTextChanged(const QString &arg1)
 {
-    update_with_new_data(filter_stocks());
+    set_tvstocks_model_data(filter_stocks());
 }
 
 
 void FormTabStocks::on_cb_marketplaces_currentTextChanged(const QString &arg1)
 {
-    update_with_new_data(filter_stocks());
+    set_tvstocks_model_data(filter_stocks());
 }
+
 
 std::vector<Stock> FormTabStocks::filter_stocks ()
 {
+    // TODO : use QSortFilterProxyModel Class instead of this
+
     QString marketplace = ui->cb_marketplaces->currentText().trimmed();
     QString market_category = ui->cb_market_category->currentText().trimmed();
     QString search_text = ui->le_search->text().trimmed().toLower();
