@@ -58,9 +58,9 @@ public:
         _cols = c;
     }
 
-    void setData(const std::vector<std::vector<std::unique_ptr<std::string>>>& v_table_data,
-                 const std::vector<std::unique_ptr<std::string>>& v_table_headers,
-                 const std::vector<std::unique_ptr<std::string>>& v_table_types);
+    void setData(const std::vector<std::vector<std::string>>& v_table_data,
+                               const std::vector<std::string>& v_table_headers,
+                               const std::vector<std::string>& v_table_types);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override { return _rows; };
     int columnCount(const QModelIndex &parent = QModelIndex()) const override { return _cols; };
@@ -71,9 +71,9 @@ public:
 
 private:
     int 	_rows, _cols;
-    std::vector<std::vector<std::unique_ptr<std::string>>> _v_table_data;
-    std::vector<std::unique_ptr<std::string>> _v_table_headers;
-    std::vector<std::unique_ptr<std::string>> _v_table_types;
+    std::vector<std::vector<std::string>> _v_table_data;
+    std::vector<std::string> _v_table_headers;
+    std::vector<std::string> _v_table_types;
 };
 
 
@@ -104,6 +104,7 @@ private slots:
     void on_bt_disconnect_clicked();
 
     void on_cb_tables_views_currentTextChanged(const QString &table_name);
+    //void on_cb_tables_views_currentTextChanged_(const QString &table_name);
 
 private:
     Ui::FormTabDatabase *ui = nullptr;

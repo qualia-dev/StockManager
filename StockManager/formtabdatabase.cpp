@@ -19,7 +19,7 @@ QVariant DbTableModel::data(const QModelIndex &index, int role) const
 
     if(role == Qt::DisplayRole)
     {
-        return QString::fromStdString(*(_v_table_data[index.row()][col]));
+        return QString::fromStdString(_v_table_data[index.row()][col]);
     }
     else if(role == Qt::TextAlignmentRole)
     {
@@ -30,15 +30,10 @@ QVariant DbTableModel::data(const QModelIndex &index, int role) const
 }
 
 
-void DbTableModel::setData(const std::vector<std::vector<std::unique_ptr<std::string>>>& v_table_data,
-                           const std::vector<std::unique_ptr<std::string>>& v_table_headers,
-                           const std::vector<std::unique_ptr<std::string>>& v_table_types)
+void DbTableModel::setData(const std::vector<std::vector<std::string>>& v_table_data,
+                           const std::vector<std::string>& v_table_headers,
+                           const std::vector<std::string>& v_table_types)
 {
-    // PROBLEM TO FIX : copy of unique_ptr
-    // _v_table_data = v_table_data;
-    // _v_table_headers = v_table_headers;
-    // _v_table_types = v_table_types;
-
     // Clear the internal vectors
     _v_table_data.clear();
     _v_table_headers.clear();
@@ -47,24 +42,13 @@ void DbTableModel::setData(const std::vector<std::vector<std::unique_ptr<std::st
     // Copy the data from the input vectors
     for (auto& row : v_table_data)
     {
-        std::vector<std::unique_ptr<std::string>> v_row;
-        for (auto& col : row)
-        {
-            v_row.push_back(std::make_unique<std::string>(*col));
-        }
-        _v_table_data.push_back(std::move(v_row));
+        std::vector<std::string> v_row;
+        for (auto& col : row) v_row.push_back(col);
+        _v_table_data.push_back(v_row);
     }
 
-    for (auto& header : v_table_headers)
-    {
-        _v_table_headers.push_back(std::make_unique<std::string>(*header));
-    }
-
-    for (auto& type : v_table_types)
-    {
-        _v_table_types.push_back(std::make_unique<std::string>(*type));
-    }
-
+    for (auto& header : v_table_headers) _v_table_headers.push_back(header);
+    for (auto& type : v_table_types) _v_table_types.push_back(type);
 
     // Notify the view that the data has changed
     // This ensures that the view updates itself with the new data
@@ -73,13 +57,17 @@ void DbTableModel::setData(const std::vector<std::vector<std::unique_ptr<std::st
     emit dataChanged(topLeft, bottomRight);
 }
 
+
 QVariant DbTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if(role == Qt::DisplayRole)
     {
         if (orientation == Qt::Horizontal)
         {
-            if (section >= 0 && section < _v_table_headers.size())   return QString::fromStdString(*(_v_table_headers[section]));
+            if (section >= 0 && section < _v_table_headers.size())
+            {
+                return QString::fromStdString(_v_table_headers[section]);
+            }
         }
         else if (orientation == Qt::Vertical)
         {
@@ -161,38 +149,34 @@ void FormTabDatabase::on_db_connection()
 void FormTabDatabase::on_cb_tables_views_currentTextChanged(const QString &table_name)
 {
     // get table content in vector of vector of std::string
-    std::vector<std::vector<std::tuple<std::unique_ptr<std::string>, std::unique_ptr<std::string>, std::unique_ptr<std::string>>>> table_content;
+    std::vector<std::vector<std::tuple<std::string, std::string, std::string>>> table_content;
 
-    if (!_db->get_table_content(table_name.toStdString(), table_content))
+    if (!_db->get_table_content_(table_name.toStdString(), table_content))
     {
         _mw->ui->te_log->append("Error loading table content");
         return;
     }
 
     // Build the structured vectors for the model
-    std::vector<std::vector<std::unique_ptr<std::string>>> v_table_data;
-    std::vector<std::unique_ptr<std::string>> v_table_headers;
-    std::vector<std::unique_ptr<std::string>> v_table_types;
+    std::vector<std::vector<std::string>> v_table_data;
+    std::vector<std::string> v_table_headers;
+    std::vector<std::string> v_table_types;
 
     bool first_row = true;
     for (auto& row : table_content)
     {
-        std::vector<std::unique_ptr<std::string>> v_row;
-        std::string log_row = "";
+        std::vector<std::string> v_row;
         for (auto& col : row)
         {
-            v_row.push_back(std::move(std::get<2>(col)));
-            log_row += *v_row.back() + " - ";
+            v_row.push_back(std::get<2>(col));
 
             if (first_row)
             {
-                v_table_headers.push_back(std::move(std::get<0>(col)));
-                v_table_types.push_back(std::move(std::get<1>(col)));
+                v_table_headers.push_back(std::get<0>(col));
+                v_table_types.push_back(std::get<1>(col));
             }
         }
-        std::cout << log_row << std::endl;
-        _mw->ui->te_log->append(QString::fromStdString(log_row));
-        v_table_data.push_back(std::move(v_row));
+        v_table_data.push_back(v_row);
         first_row = false;
     }
 
@@ -203,7 +187,7 @@ void FormTabDatabase::on_cb_tables_views_currentTextChanged(const QString &table
     _table_model->setData(v_table_data, v_table_headers, v_table_types);
     ui->tv_db_content->setModel(_table_model);
 
-     ui->tv_db_content->resizeColumnsToContents();
+    ui->tv_db_content->resizeColumnsToContents();
 
 }
 
