@@ -5,7 +5,7 @@
 
 // Set the starting values for this TradingDay object
 TradingDay::TradingDay(
-        const Date& date,
+        const QDate& date,
         const float time,
         const float open,
         const float close,
@@ -25,7 +25,7 @@ TradingDay::TradingDay(
 
 // Default constructor
 TradingDay::TradingDay() :
-    m_date(Date()),
+    m_date(QDate()),
     m_time(0),
     m_open(0),
     m_close(0),

@@ -292,7 +292,24 @@
       </layout>
      </item>
      <item>
-      <widget class="QTextEdit" name="textEdit"/>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <item alignment="Qt::AlignLeft">
+        <widget class="QComboBox" name="cb_tables_views">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTableView" name="tv_db_content"/>
      </item>
     </layout>
    </item>

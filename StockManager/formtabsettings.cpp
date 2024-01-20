@@ -19,15 +19,6 @@ FormTabSettings::FormTabSettings(QSettings* _settings, SqliteWrap* _db, QWidget 
 
     m_path_filename = m_settings->value("db_path").toString() + "/" + m_settings->value("db_name").toString();
 
-    if (!m_db->exists(m_path_filename.toStdString()))
-    {   // Database file does not exist
-        ui->bt_connect->setEnabled(false);
-        ui->bt_delete->setEnabled(false);
-    }
-    else
-    {   // Database file exists
-        ui->bt_create->setEnabled(false);
-    }
 }
 
 FormTabSettings::~FormTabSettings()

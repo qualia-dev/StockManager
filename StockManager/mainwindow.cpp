@@ -21,10 +21,10 @@ MainWindow::MainWindow(QWidget *parent)
     // set splitter original size
     QList<int> sizes;
     sizes.append(1000);
-    sizes.append(100);
+    sizes.append(10);
     ui->splitter->setSizes(sizes);
 
-    toggleLogSplitter();
+    // toggleLogSplitter();  // Hide log panel
 
     QShortcut *shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this);
     connect(shortcut, &QShortcut::activated, this, &MainWindow::toggleLogSplitter);
@@ -77,7 +77,7 @@ void MainWindow::create_tabs()
     ui->tw_main->removeTab(0);
     tab_stocks = new FormTabStocks(_db, this);
     ui->tw_main->addTab(tab_stocks, "Stocks");
-    tab_database = new FormTabDatabase(_db, this);
+    tab_database = new FormTabDatabase(_settings, _db, this);
     ui->tw_main->addTab(tab_database, "Database");
     tab_settings = new FormTabSettings(_settings, _db, this);
     ui->tw_main->addTab(tab_settings, "Settings");

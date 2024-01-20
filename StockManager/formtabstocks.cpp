@@ -20,7 +20,7 @@ FormTabStocks::FormTabStocks(SqliteWrap* db, QWidget *parent)
 
     // set the qtableview
     ui->tv_stocks->setAlternatingRowColors(true);
-    ui->tv_stocks->horizontalHeader()->setFixedHeight(22);
+    ui->tv_stocks->horizontalHeader()->setFixedHeight(20);          // set the height of the columns header
     ui->tv_stocks->verticalHeader()->setDefaultSectionSize(20);     // set the heights of the cells
     ui->tv_stocks->setSortingEnabled(true);
 
@@ -171,7 +171,6 @@ QVariant StockModel::data(const QModelIndex &index, int role) const
 
 void StockModel::setData(const std::vector<Stock>& stocks)
 {
-    // Assuming that v_people is a member of your PersonModel
     _v_stocks = stocks;
 
     // Notify the view that the data has changed

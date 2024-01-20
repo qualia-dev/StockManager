@@ -17,8 +17,8 @@ using namespace std;
 //     trading days.
 // Does not load any data
 TradingHistory::TradingHistory(
-        const Date& firstTradingDayInData,
-        const Date& lastTradingDayInData) :
+    const QDate& firstTradingDayInData,
+    const QDate& lastTradingDayInData) :
     m_loaded(false),
     m_tradingDataItValid(false),
     m_firstTradingDayInData(firstTradingDayInData),
@@ -131,13 +131,13 @@ bool TradingHistory::getNextTradingDayData(TradingDay& tradingDayData)
 }
 
 // Getter for date of first day of trading
-Date TradingHistory::firstDate() const
+QDate TradingHistory::firstDate() const
 {
     return m_firstTradingDayInData;
 }
 
 // Getter for date of last day of trading
-Date TradingHistory::lastDate() const
+QDate TradingHistory::lastDate() const
 {
     return m_lastTradingDayInData;
 }

@@ -6,7 +6,7 @@
 #include <QAbstractItemModel>
 
 #include "sqlitewrap.h"
-#include "stock.h"
+#include "finance/stock.h"
 
 class MainWindow;
 

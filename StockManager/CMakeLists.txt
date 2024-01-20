@@ -20,26 +20,32 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
-        tradingday.cpp
-        tradingday.h
-        tradinghistory.cpp
-        tradinghistory.h
+
+
+
+
         formtabsettings.cpp
         formtabsettings.h
         formtabsettings.ui
-        date.h
-        date.cpp
-        company.h company.cpp
+
+
+
         formtabdownload.h formtabdownload.cpp formtabdownload.ui
-        ftpdownloader.h
-        marketnasdaq.h marketnasdaq.cpp
-        stock.h stock.cpp
-        marketplace.h marketplace.cpp
-        country.h country.cpp
+
+
+
+
+
         formtabdatabase.h formtabdatabase.cpp formtabdatabase.ui
         formtabstocks.h formtabstocks.cpp formtabstocks.ui
         dlgexecutesql.h dlgexecutesql.cpp dlgexecutesql.ui
         resources.qrc
+        finance/company.cpp finance/company.h
+        finance/tradingday.cpp finance/tradingday.h finance/tradinghistory.cpp finance/tradinghistory.h
+        finance/marketnasdaq.cpp finance/marketnasdaq.h finance/marketplace.cpp finance/marketplace.h
+        finance/ftpdownloader.h
+        finance/stock.cpp finance/stock.h
+        finance/country.cpp finance/country.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET StockMan APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

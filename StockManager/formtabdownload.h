@@ -10,7 +10,6 @@
 #include <QWidget>
 
 #include "sqlitewrap.h"
-#include "ftpdownloader.h"
 
 class MainWindow;
 

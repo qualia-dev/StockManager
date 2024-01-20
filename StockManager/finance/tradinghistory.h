@@ -5,7 +5,7 @@
 #include <list>
 #include <string>
 #include "tradingday.h"
-using namespace std;
+
 
 class TradingHistory
 {
@@ -14,8 +14,8 @@ public:
     // Constructor: Create a trading history for the specified first and last trading days
     // Does not load any data
     TradingHistory(
-            const Date& firstTradingDayInData,
-            const Date& lastTradingDayInData);
+            const QDate& firstTradingDayInData,
+            const QDate& lastTradingDayInData);
 
 
 private:
@@ -34,16 +34,16 @@ private:
     std::list<TradingDay>::iterator m_tradingDataIt;
 
     // The first date that the trading day list has stock data for, on this particular stock.
-    Date m_firstTradingDayInData;
+    QDate m_firstTradingDayInData;
 
     // The last date that the trading day list has stock data for, on this particular stock.
-    Date m_lastTradingDayInData;
+    QDate m_lastTradingDayInData;
 
     // Getter for date of first day of trading
-    Date firstDate() const;
+    QDate firstDate() const;
 
     // Getter for date of last day of trading
-    Date lastDate() const;
+    QDate lastDate() const;
 
 
 public:

@@ -3,7 +3,7 @@
 
 #include "formtabdownload.h"
 #include "ui_formtabdownload.h"
-#include "marketnasdaq.h"
+#include "finance/marketnasdaq.h"
 
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"

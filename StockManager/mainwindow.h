@@ -6,8 +6,8 @@
 
 #include "qlabel.h"
 #include "sqlitewrap.h"
-#include "marketplace.h"
-#include "company.h"
+#include "finance/marketplace.h"
+#include "finance/company.h"
 
 #include "formtabsettings.h"
 #include "formtabdownload.h"

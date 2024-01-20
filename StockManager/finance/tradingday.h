@@ -2,14 +2,14 @@
 #ifndef TRADINGDAY_H
 #define TRADINGDAY_H
 
-#include "date.h"
+#include <QDate>
 
 class TradingDay
 {
 
 public:
     // Create a trading day with the starting values passed
-    TradingDay(const Date& date, const float time, const float open, const float close, const float high, const float low, const unsigned long volume);
+    TradingDay(const QDate& date, const float time, const float open, const float close, const float high, const float low, const unsigned long volume);
 
     // Construct: Empty constructor, default values
     TradingDay();
@@ -17,7 +17,7 @@ public:
 private:
 
     //the date of the trading day
-    Date m_date;
+    QDate m_date;
 
     // The time of the trade (guess at format)
     float m_time;
@@ -40,7 +40,7 @@ private:
 public:
 
     //getters
-    Date date() const {return m_date;}
+    QDate date() const {return m_date;}
     float time() const {return m_time;}
     float open() const {return m_open;}
     float close() const {return m_close;}
@@ -49,7 +49,7 @@ public:
     unsigned long volume() const {return m_volume;}
 
     //setters
-    void date(const Date& date) {m_date = date;}
+    void date(const QDate& date) {m_date = date;}
     void time(const float time) {m_time = time;}
     void open(const float open) {m_open = open;}
     void close(const float close) {m_close = close;}
