@@ -8,6 +8,9 @@
 
 
 
+//===========================================================================================================
+//      FormTabStocks
+
 FormTabStocks::FormTabStocks(SqliteWrap* db, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::FormTabStocks)
@@ -31,8 +34,10 @@ FormTabStocks::FormTabStocks(SqliteWrap* db, QWidget *parent)
     ui->tv_stocks->setColumnWidth(0, 50);
     ui->tv_stocks->setColumnWidth(1, 350);
     ui->tv_stocks->setColumnWidth(2, 100);
-    ui->tv_stocks->setColumnWidth(3, 200);
+    ui->tv_stocks->setColumnWidth(3, 100);
     ui->tv_stocks->setColumnWidth(4, 200);
+    ui->tv_stocks->setColumnWidth(5, 200);
+    ui->tv_stocks->setColumnWidth(6, 400);
 }
 
 FormTabStocks::~FormTabStocks()
@@ -78,7 +83,7 @@ void FormTabStocks::set_tvstocks_model_data (const std::vector<Stock>& v_stocks)
 {
     delete (_stocks_model);
     _stocks_model = new StockModel(this);
-    _stocks_model->setSize(v_stocks.size(), 5);
+    _stocks_model->setSize(v_stocks.size(), 7);
     sort_proxy_model = new QSortFilterProxyModel(this);
     sort_proxy_model->setDynamicSortFilter(true);
     sort_proxy_model->setSourceModel(_stocks_model);
@@ -121,10 +126,12 @@ std::vector<Stock> FormTabStocks::filter_stocks ()
         QString stock_market_category_lower = QString::fromStdString(stock.marketCategory());
         QString stock_name_lower = QString::fromStdString(stock.name()).toLower();
         QString stock_symbol_lower = QString::fromStdString(stock.symbol()).toLower();
+        QString stock_sector_lower = QString::fromStdString(stock.sector()).toLower();
+        QString stock_industry_lower = QString::fromStdString(stock.industry()).toLower();
 
         bool isMarketplaceMatch = (marketplace == "All") || stock_marketplace_name_lower.contains(marketplace);
         bool isMarketCategoryMatch = (market_category == "All") || stock_market_category_lower.contains(market_category);
-        bool isSearchMatch = stock_name_lower.contains(search_text) || stock_symbol_lower.contains(search_text);
+        bool isSearchMatch = stock_name_lower.contains(search_text) || stock_symbol_lower.contains(search_text) || stock_sector_lower.contains(search_text) || stock_industry_lower.contains(search_text);
 
         if (isMarketplaceMatch && isMarketCategoryMatch && isSearchMatch) {
             v_search_results.push_back(stock);
@@ -134,6 +141,9 @@ std::vector<Stock> FormTabStocks::filter_stocks ()
     return v_search_results;
 }
 
+
+//===========================================================================================================
+//      StockModel
 
 QVariant StockModel::data(const QModelIndex &index, int role) const
 {
@@ -155,6 +165,10 @@ QVariant StockModel::data(const QModelIndex &index, int role) const
             return  QString::fromStdString(_v_stocks[index.row()].marketplaceName());
         case 4:
             return  QString::fromStdString(_v_stocks[index.row()].marketCategory());
+        case 5:
+            return  QString::fromStdString(_v_stocks[index.row()].sector());
+        case 6:
+            return  QString::fromStdString(_v_stocks[index.row()].industry());
         default:
             qDebug() << "Not supposed to happen";
             return QVariant();
@@ -195,6 +209,10 @@ QVariant StockModel::headerData(int section, Qt::Orientation orientation, int ro
             return tr("Market");
         case 4:
             return tr("Type");
+        case 5:
+            return tr("Sector");
+        case 6:
+            return tr("Industry");
         default:
             return QVariant();
         }

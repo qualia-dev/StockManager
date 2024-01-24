@@ -8,6 +8,7 @@ class Stock
 public:
     Stock(int id, const std::string& symbol, const std::string& name, int _company_id,  const std::string& company_name,
           const std::string& isin, int marketplace_id, const std::string& marketplace_name, const std::string&  market_category,
+          const std::string& sector, const std::string& industry,
           const std::string& record_date, const std::string& source_data, const std::string& last_updated);
     Stock();
 
@@ -22,6 +23,8 @@ public:
     int _marketplace_id;
     std::string _marketplace_name;
     std::string _market_category;    // no database table for this
+    std::string _sector;
+    std::string _industry;
     std::string _record_date;
     std::string _source_data;
     std::string _last_updated;
@@ -38,6 +41,8 @@ public:
     int marketplaceId() const { return _marketplace_id; }
     std::string marketplaceName() const { return _marketplace_name; }  // Getter for the marketplace
     std::string marketCategory() const { return _market_category; }
+    std::string sector() const { return _sector; }
+    std::string industry() const { return _industry; }
     std::string recordDate() const { return _record_date; }
     std::string sourceData() const { return _source_data; }
     std::string lastUpdated() const { return _last_updated; }
@@ -52,6 +57,8 @@ public:
     void setMarketplaceId(int marketplaceId) { _marketplace_id = marketplaceId; }
     void setMarketplaceName(const std::string& marketplaceName) { _marketplace_name = marketplaceName; }
     void setMarketCategory(const std::string& category) { _market_category = category; }
+    void setSector(const std::string& sector) { _sector = sector; }
+    void setIndustry(const std::string& industry) { _industry = industry; }
     void setRecordDate(const std::string& date) { _record_date = date; }
     void setSourceData(const std::string& sourceData) { _source_data = sourceData; }
     void setLastUpdated(const std::string& lastUpdated) { _last_updated = lastUpdated; }

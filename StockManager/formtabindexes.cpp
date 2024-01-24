@@ -27,6 +27,10 @@ QVariant IndexCompoModel::data(const QModelIndex &index, int role) const
             return  QString::fromStdString(_v_stocks[index.row()].symbol());
         case 3:
             return  QString::fromStdString(_v_stocks[index.row()].marketCategory());
+        case 4:
+            return  QString::fromStdString(_v_stocks[index.row()].sector());
+        case 5:
+            return  QString::fromStdString(_v_stocks[index.row()].industry());
         default:
             qDebug() << "Not supposed to happen";
             return QVariant();
@@ -65,6 +69,10 @@ QVariant IndexCompoModel::headerData(int section, Qt::Orientation orientation, i
             return tr("Symbol");
         case 3:
             return tr("Type");
+        case 4:
+            return tr("Sector");
+        case 5:
+            return tr("Industry");
         default:
             return QVariant();
         }
@@ -113,6 +121,7 @@ FormTabIndexes::FormTabIndexes(SqliteWrap *db, QWidget *parent)
     ui->tv_compo_stocks->setColumnWidth(2, 100);
     ui->tv_compo_stocks->setColumnWidth(3, 200);
     ui->tv_compo_stocks->setColumnWidth(4, 200);
+    ui->tv_compo_stocks->setColumnWidth(5, 400);
 }
 
 
@@ -146,7 +155,7 @@ void FormTabIndexes::set_tvindexcompo_model_data(const std::vector<Stock> &_v_co
 {
     delete _indexcompo_model;
     _indexcompo_model = new IndexCompoModel(this);
-    _indexcompo_model->setSize(_v_compo_stocks.size(), 4);
+    _indexcompo_model->setSize(_v_compo_stocks.size(), 6);
     sort_proxy_model = new QSortFilterProxyModel(this);
     sort_proxy_model->setDynamicSortFilter(true);
     sort_proxy_model->setSourceModel(_indexcompo_model);
