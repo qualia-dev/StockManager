@@ -2,5 +2,7 @@
     <qresource prefix="/ButtonIcons">
         <file>icons/db-notconnected.png</file>
         <file>icons/db-connected.png</file>
+        <file>icons/delete01.png</file>
+        <file>icons/delete02.png</file>
     </qresource>
 </RCC>

@@ -24,7 +24,7 @@ FormTabStocks::FormTabStocks(SqliteWrap* db, QWidget *parent)
     ui->tv_stocks->verticalHeader()->setDefaultSectionSize(20);     // set the heights of the cells
     ui->tv_stocks->setSortingEnabled(true);
 
-    set_tvstocks_model_from_db();   // create model, set the data, populate combo boxes
+    refresh_tvstocks_from_db();   // create model, set the data, populate combo boxes
 
     // set original columns size and keep the interactive capability
     ui->tv_stocks->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
@@ -65,11 +65,11 @@ void FormTabStocks::populate_combobox ()
 }
 
 
-void FormTabStocks::set_tvstocks_model_from_db()
+void FormTabStocks::refresh_tvstocks_from_db()
 {
+    _v_stocks.clear();
     _mw->get_stocks_from_db(_v_stocks);
     populate_combobox();
-
     set_tvstocks_model_data (_v_stocks);
 }
 

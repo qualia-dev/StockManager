@@ -13,6 +13,7 @@
 #include "formtabdownload.h"
 #include "formtabdatabase.h"
 #include "formtabstocks.h"
+#include "formtabindexes.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,10 +31,16 @@ public:
 
 public:
     bool is_db_connected() { return _db_connected; }
-    void get_marketplaces_from_db(std::vector<Marketplace> &v_marketplaces);
-    void get_stocks_from_db(std::vector<Stock> &v_stocks);
     void refresh_stocks();
+    void refresh_indexes();
     void set_connection_database(bool connected);
+
+    // DB access
+    void get_marketplaces_from_db(std::vector<Marketplace> &v_marketplaces);
+    bool get_stocks_from_db(std::vector<Stock> &v_stocks);
+    bool get_stocks_from_db(const std::string condition, std::vector<Stock> &v_stocks);
+    bool get_indexes_from_db(std::vector<Index> &v_indexes);
+    bool get_index_composition (const std::string condition, std::vector<Stock> &v_compo_stock);
 
 private:
     void init_settings();
@@ -61,6 +68,7 @@ private:
     FormTabDownload* tab_download = nullptr;
     FormTabDatabase* tab_database = nullptr;
     FormTabStocks* tab_stocks = nullptr;
+    FormTabIndexes* tab_indexes = nullptr;
 
 
 };

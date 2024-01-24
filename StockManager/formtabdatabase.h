@@ -89,7 +89,7 @@ public:
     ~FormTabDatabase();
 
 private:
-    void on_db_connection();
+    void on_db_connection(int idx_table_selected = 1);
     void set_btn_visibility_creation(bool is_created);
     void set_btn_visibility_connection(bool is_connected);
 
@@ -102,9 +102,14 @@ private slots:
     void on_bt_delete_clicked();
     void on_bt_connect_clicked();
     void on_bt_disconnect_clicked();
+    void on_bt_save_table_contaent_clicked();
+    static bool select_callback (void* user_param, char** cols, int nb_col);
+    void on_bt_insert_contaent_clicked();
+    void on_tbt_delete_rows_clicked();
+    void on_tbt_delete_table_clicked();
 
     void on_cb_tables_views_currentTextChanged(const QString &table_name);
-    //void on_cb_tables_views_currentTextChanged_(const QString &table_name);
+
 
 private:
     Ui::FormTabDatabase *ui = nullptr;

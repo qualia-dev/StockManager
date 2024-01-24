@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+
+#include <QMessageBox>
 
 #include "formtabdatabase.h"
 #include "dlgexecutesql.h"
@@ -126,7 +129,7 @@ FormTabDatabase::~FormTabDatabase()
 }
 
 
-void FormTabDatabase::on_db_connection()
+void FormTabDatabase::on_db_connection(int idx_table_selected)
 {
     std::vector<std::string> table_list;
     // get database schema
@@ -143,6 +146,8 @@ void FormTabDatabase::on_db_connection()
         if (table_name.substr(0, 7) == "sqlite_") continue;  // remove sqlite internal tables
         ui->cb_tables_views->addItem(QString::fromStdString(table_name));
     }
+    if (table_list.size() > 0)
+        ui->cb_tables_views->setCurrentIndex(idx_table_selected);
 }
 
 
@@ -150,6 +155,10 @@ void FormTabDatabase::on_cb_tables_views_currentTextChanged(const QString &table
 {
     // get table content in vector of vector of std::string
     std::vector<std::vector<std::tuple<std::string, std::string, std::string>>> table_content;
+
+    if (table_name == "") return;
+
+    _mw->ui->te_log->append("Loading table content: " + table_name);
 
     if (!_db->get_table_content_(table_name.toStdString(), table_content))
     {
@@ -182,9 +191,14 @@ void FormTabDatabase::on_cb_tables_views_currentTextChanged(const QString &table
 
     // set model
     _table_model = new DbTableModel(this);
-    _table_model->setSize(v_table_data.size(), v_table_data[0].size());
 
-    _table_model->setData(v_table_data, v_table_headers, v_table_types);
+    if (v_table_data.size() == 0)
+        _table_model->setSize(0, 0);
+    else
+    {
+        _table_model->setSize(v_table_data.size(), v_table_data[0].size());
+        _table_model->setData(v_table_data, v_table_headers, v_table_types);
+    }
     ui->tv_db_content->setModel(_table_model);
 
     ui->tv_db_content->resizeColumnsToContents();
@@ -245,7 +259,9 @@ void FormTabDatabase::set_btn_visibility_connection(bool is_connected)
     ui->bt_delete->setEnabled(!is_connected);
     ui->bt_disconnect->setEnabled(is_connected);
     ui->bt_save_db_schema->setEnabled(is_connected);
+    ui->bt_save_table_contaent->setEnabled(is_connected);
     ui->bt_execute_sql_schema->setEnabled(is_connected);
+    ui->bt_insert_contaent->setEnabled(is_connected);
     ui->bt_execute_sql->setEnabled(is_connected);
 }
 
@@ -256,28 +272,31 @@ void FormTabDatabase::on_bt_connect_clicked()
     {
         _mw->ui->te_log->append("Error connecting to Db: " + _path_filename);
         _mw->set_connection_database(false);
+        return;
     }
-    else
-    {
-        _mw->ui->te_log->append("Connected to db: " + _path_filename);
-        _mw->set_connection_database(true);
-        set_btn_visibility_connection(true);
-    }
+
+    _mw->ui->te_log->append("Connected to db: " + _path_filename);
+    _mw->set_connection_database(true);
+    set_btn_visibility_connection(true);
+    on_db_connection();
 }
 
 
 void FormTabDatabase::on_bt_disconnect_clicked()
 {
-    if (_db->disconnect())
-    {
-        _mw->ui->te_log->append("Disconnected from db: " + _path_filename);
-        _mw->set_connection_database(false);
-        set_btn_visibility_connection(false);
-    }
-    else
+    if (!_db->disconnect())
     {
         _mw->ui->te_log->append("Error disconnecting from Db: " + _path_filename);
+        return;
     }
+
+    _mw->ui->te_log->append("Disconnected from db: " + _path_filename);
+    _mw->set_connection_database(false);
+    set_btn_visibility_connection(false);
+    // reset qtableview
+    _table_model = new DbTableModel(this);
+    _table_model->setSize(0, 0);
+    ui->tv_db_content->setModel(_table_model);
 }
 
 
@@ -296,14 +315,14 @@ void FormTabDatabase::on_bt_save_db_schema_clicked()
 
 void FormTabDatabase::on_bt_execute_sql_schema_clicked()
 {
-    if (_db->execute_sql_schema("../db/rebuild_db_schema.sql"))
-    {
-        _mw->ui->te_log->append("Database schema executed from file: ../db/rebuild_db_schema.sql");
-    }
-    else
+    if (!_db->execute_sql_file("../db/rebuild_db_schema.sql"))
     {
         _mw->ui->te_log->append("Error executing database schema from file: ../db/rebuild_db_schema.sql");
+        return;
     }
+
+    _mw->ui->te_log->append("Database schema executed from file: ../db/rebuild_db_schema.sql");
+    on_db_connection();
 }
 
 
@@ -313,6 +332,132 @@ void FormTabDatabase::on_bt_execute_sql_clicked()
     dlg.setModal(true);
     dlg.exec();
 }
+
+
+void FormTabDatabase::on_bt_save_table_contaent_clicked()
+{
+    std::vector v_tables = {"T_Countries", "T_Indexes", "T_Marketplaces"};
+    std::string sql_insert_all_tables = "";
+
+    // iterate through v_tables
+    for (const std::string &table_name : v_tables)
+    {
+        std::vector<std::vector<std::string>> v2_contents;
+        _db->select_sync(table_name, "", (void*)&v2_contents, select_callback);
+
+        // generate the sql INSERT command to re-insert the data
+        std::string sql = "INSERT INTO " + table_name + " VALUES ";
+        for (auto& row : v2_contents)
+        {
+            sql += "(";
+            for (auto& col : row)
+            {
+                if (col == "NULL") sql += col + ",";
+                else sql += "'" + col + "',";
+            }
+            sql.pop_back();
+            sql += "),";
+        }
+        sql.pop_back();
+        sql += ";";
+
+        sql_insert_all_tables += "@@@sql@@@\n" + sql + "\n";
+    }
+
+    // save to file : _path_filename/sql_insert_all_tables.sql
+    std::string filename = _settings->value("db_path").toString().toStdString() + "/rebuild_all_insert.sql";
+    std::ofstream ofs(filename);
+    ofs << sql_insert_all_tables;
+    ofs.close();
+
+     _mw->ui->te_log->append("Database Rows Data saved to file: ../rebuild_all_insert.sql");
+}
+
+bool FormTabDatabase::select_callback (void* user_param, char** cols, int nb_col)
+{
+    std::vector <std::string>table_row;
+    for (int i = 0; i < nb_col; i++)
+    {
+        // first column is the rowid let the db generates it
+        if (i==0)   table_row.push_back("NULL");
+        else        table_row.push_back(cols[i]);
+    }
+
+    std::vector<std::vector<std::string>>* v2_contents = (std::vector<std::vector<std::string>>*) user_param;
+    v2_contents->push_back(table_row);
+
+    return true;
+}
+
+
+void FormTabDatabase::on_bt_insert_contaent_clicked()
+{
+    std::string filename = _settings->value("db_path").toString().toStdString() + "/rebuild_all_insert.sql";
+
+    if (!_db->execute_sql_file(filename))
+    {
+        _mw->ui->te_log->append("Error INSERT from file: rebuild_all_insert.sql");
+        return;
+    }
+
+    _mw->ui->te_log->append("Database INSERT tables executed from file : rebuild_all_insert.sql");
+    on_db_connection();
+}
+
+void FormTabDatabase::on_tbt_delete_rows_clicked()
+{
+    // open dialogbox to confirm
+    QMessageBox msgBox;
+    msgBox.setText("Are you sure you want to delete all rows from table: " + ui->cb_tables_views->currentText());
+    msgBox.setInformativeText("This action cannot be undone !");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+    if (ret == QMessageBox::Cancel) return;
+
+    std::string sql = "DELETE FROM " + ui->cb_tables_views->currentText().toStdString();
+    _db->execute_sql(sql);
+    // call on_db_connection to refresh the table passing the current index of the combobox
+    on_db_connection(ui->cb_tables_views->currentIndex());
+
+    if (ui->cb_tables_views->currentText() == "T_Stocks") _mw->refresh_stocks();
+    else if (ui->cb_tables_views->currentText() == "T_Stocks_In_Indexes") _mw->refresh_indexes();
+
+}
+
+
+void FormTabDatabase::on_tbt_delete_table_clicked()
+{
+    // open dialogbox to confirm
+    QMessageBox msgBox;
+    msgBox.setText("Are you sure you want to delete the table: " + ui->cb_tables_views->currentText());
+    msgBox.setInformativeText("This action cannot be undone !");
+    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+    if (ret == QMessageBox::Cancel) return;
+
+    std::string sql = "DROP TABLE " + ui->cb_tables_views->currentText().toStdString();
+    _db->execute_sql(sql);
+    on_db_connection();
+
+    if (ui->cb_tables_views->currentText() == "T_Stocks")
+    {
+        _mw->refresh_stocks();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

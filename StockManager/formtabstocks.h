@@ -15,6 +15,9 @@ class FormTabStocks;
 }
 
 
+// ====================================================================================================
+//     class StockModel
+
 class StockModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -41,6 +44,10 @@ private:
 };
 
 
+
+// ====================================================================================================
+//     class FormTabStocks
+
 class FormTabStocks : public QWidget
 {
     Q_OBJECT
@@ -50,7 +57,7 @@ public:
     ~FormTabStocks();
 
     void populate_combobox();
-    void set_tvstocks_model_from_db();
+    void refresh_tvstocks_from_db();
     void set_tvstocks_model_data (const std::vector<Stock>& v_stocks);
     std::vector<Stock> filter_stocks ();
 

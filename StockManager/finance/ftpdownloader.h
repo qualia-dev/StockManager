@@ -65,6 +65,8 @@ public:
         int a1, a2, a3, a4, p1, p2, dataPort;       //PASV Information
         std::vector<char> buffer;
 
+        std::cout << "downloadFileToBuffer() - start" << std::endl;
+
         try {
             // obtain host server info
             struct hostent *host;
@@ -99,28 +101,32 @@ public:
             // Receive welcome message from server
             length = recv(origSock, receiveBuff, SIZE, 0);
             receiveBuff[length] = '\0';
-            std::cout << receiveBuff << std::endl;
+            std::cout << "Receive welcome message : " << receiveBuff << std::endl;
 
             // Send username to server
             std::string usernameMessage = "USER " + username_ + "\r\n";
-            send(origSock, usernameMessage.c_str(), usernameMessage.size(), 0);
+            int rc = send(origSock, usernameMessage.c_str(), usernameMessage.size(), 0);
+            if (rc == -1)
+            {   perror("send");
+                return {};
+            }
             length = recv(origSock, receiveBuff, SIZE, 0);
             receiveBuff[length] = '\0';
-            std::cout << receiveBuff << std::endl;
+            std::cout << "Receive response username : " << receiveBuff << std::endl;
 
             // Send password to server
             std::string passwordMessage = "PASS " + password_ + "\r\n";
             send(origSock, passwordMessage.c_str(), passwordMessage.size(), 0);
             length = recv(origSock, receiveBuff, SIZE, 0);
             receiveBuff[length] = '\0';
-            std::cout << receiveBuff << std::endl;
+            std::cout << "Receive response password : " << receiveBuff << std::endl;
 
             // Send PASV command to server : enter passive mode
             std::string pasvMessageString = "PASV\r\n";
             send(origSock, pasvMessageString.c_str(), pasvMessageString.size(), 0);
             length = recv(origSock, pasvMessage, 100, 0);
             pasvMessage[length] = '\0';
-            std::cout << pasvMessage << std::endl;
+            std::cout << "Receive response PASV : " << pasvMessage << std::endl;
 
             // Parse PASV information
             while (pasvMessage[i] != '(')

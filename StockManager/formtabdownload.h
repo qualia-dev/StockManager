@@ -28,6 +28,10 @@ public:
 private slots:
     void on_bt_dwnNasdaqSecurities_clicked();
     void on_bt_extractSecurities_clicked();
+    void on_bt_download_tool_url_clicked();
+    void on_bt_yahoo_send_clicked();
+    void on_bt_nasdaq100_compo_clicked();
+    void on_bt_nasdaq_company_infos_clicked();
 
 private:
     void dwn_nasdaq_securities_list();

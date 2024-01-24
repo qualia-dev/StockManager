@@ -17,21 +17,16 @@ class FormTabSettings : public QWidget
     Q_OBJECT
 
 public:
-    explicit FormTabSettings(QSettings* _settings, SqliteWrap* _db, QWidget *parent = nullptr);
+    explicit FormTabSettings(QSettings* settings, SqliteWrap* db, QWidget *parent = nullptr);
     ~FormTabSettings();
 
 private slots:
-    void on_bt_exists_clicked();
-    void on_bt_create_clicked();
-    void on_bt_delete_clicked();
-    void on_bt_connect_clicked();
 
 private:
     Ui::FormTabSettings *ui = nullptr;
-    MainWindow* mw = nullptr;
-    QSettings* m_settings = nullptr;
-    SqliteWrap* m_db = nullptr;
-    QString m_path_filename;
+    MainWindow* _mw = nullptr;
+    QSettings* _settings = nullptr;
+    SqliteWrap* _db = nullptr;
 };
 
 #endif // FORMTABSETTINGS_H

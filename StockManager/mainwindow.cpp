@@ -77,12 +77,14 @@ void MainWindow::create_tabs()
     ui->tw_main->removeTab(0);
     tab_stocks = new FormTabStocks(_db, this);
     ui->tw_main->addTab(tab_stocks, "Stocks");
+    tab_indexes = new FormTabIndexes(_db, this);
+    ui->tw_main->addTab(tab_indexes, "Indexes");
     tab_database = new FormTabDatabase(_settings, _db, this);
     ui->tw_main->addTab(tab_database, "Database");
-    tab_settings = new FormTabSettings(_settings, _db, this);
-    ui->tw_main->addTab(tab_settings, "Settings");
     tab_download = new FormTabDownload(_db, this);
     ui->tw_main->addTab(tab_download, "Download");
+    tab_settings = new FormTabSettings(_settings, _db, this);
+    ui->tw_main->addTab(tab_settings, "Settings");
 }
 
 void MainWindow::set_statusbar_text(const QString &text)
@@ -123,7 +125,12 @@ void MainWindow::init_settings()
 
 void MainWindow::refresh_stocks()
 {
-    tab_stocks->set_tvstocks_model_from_db();
+    tab_stocks->refresh_tvstocks_from_db();
+}
+
+void MainWindow::refresh_indexes()
+{
+    tab_indexes->refresh_tvindexcompo_from_db();
 }
 
 void MainWindow::toggleLogSplitter()
@@ -160,32 +167,31 @@ void MainWindow::get_marketplaces_from_db(std::vector<Marketplace> &v_marketplac
 
 
 
-void MainWindow::get_stocks_from_db(std::vector<Stock> &v_stocks)
+bool MainWindow::get_stocks_from_db(std::vector<Stock> &v_stocks)
 {
-    std::string table = "StockView";
+    std::string table = "V_Stocks";
     std::string condition = "";
-
-    bool rc;
-    // std::string vers;
-    // bool rc = _db->get_sqlite_version(vers);
-    // std::string name;
-    // rc = _db->get_database_name(name);
-
-    //std::vector<std::string> v_tables;
-    //std::string query = "SELECT name FROM Country";
-    //rc = _db->get_table_list(query, v_tables);
-
-    rc = _db->select_sync(table, condition, (void*)&v_stocks, Stock::deserialize);
-
-    // for (auto &st : v_stocks)
-    // {
-    //     std::cout << "id: " << st.id() << " - name: " << st.name() << std::endl;
-    // }
+    return _db->select_sync(table, condition, (void*)&v_stocks, Stock::deserialize);
 }
 
+bool MainWindow::get_stocks_from_db(const std::string condition, std::vector<Stock> &v_stocks)
+{
+    std::string table = "V_Stocks";
+    return _db->select_sync(table, condition, (void*)&v_stocks, Stock::deserialize);
+}
 
+bool MainWindow::get_indexes_from_db(std::vector<Index> &v_indexes)
+{
+    std::string table = "V_Indexes";  // View
+    std::string condition = "";
+    return _db->select_sync(table, condition, (void*)&v_indexes, Index::deserialize);
+}
 
-
+bool MainWindow::get_index_composition(const std::string condition, std::vector<Stock> &v_compo_stock)
+{
+    std::string table = "V_IndexComposition";  // View
+    return _db->select_sync(table, condition, (void*)&v_compo_stock, Stock::deserialize_compo_index);
+}
 
 
 

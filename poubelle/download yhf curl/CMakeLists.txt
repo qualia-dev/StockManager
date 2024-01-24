@@ -2,6 +2,25 @@ cmake_minimum_required(VERSION 3.5)
 
 project(StockMan VERSION 0.1 LANGUAGES CXX)
 
+include(ExternalProject)
+
+# Set the version of libcurl you downloaded
+set(CURL_VERSION 8.5.0)
+
+ExternalProject_Add(
+    curl
+    URL "file:///media/veracrypt4/dev2024/ext/curl-8.5.0.zip"
+    PREFIX ${CMAKE_BINARY_DIR}/external
+    CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/external/src/curl/configure --prefix=${CMAKE_BINARY_DIR}/external --with-openssl
+    BUILD_COMMAND make
+    INSTALL_COMMAND make install
+)
+
+# Include and link against libcurl
+include_directories(${CMAKE_BINARY_DIR}/external/include)
+link_directories(${CMAKE_BINARY_DIR}/external/lib)
+link_libraries(curl)
+
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -35,10 +54,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         finance/stock.cpp finance/stock.h
         finance/country.cpp finance/country.h
         finance/yahoofinance.cpp finance/yahoofinance.h
-        finance/index.h finance/index.cpp
-        formtabindexes.h formtabindexes.cpp formtabindexes.ui
-        finance/index.h finance/index.cpp
-
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET StockMan APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -16,16 +16,16 @@ bool Marketplace::deserialize(void* user_param, char **row, int nb_col)
         return false;
 
     // because static
-    Marketplace* mkp = new Marketplace();
+    Marketplace mkp;
 
-    mkp->_id = atoi(row[0]);
-    mkp->_name = row[1];
-    mkp->_name_full = row[2];
-    mkp->_country_id = atoi(row[3]);
-    mkp->_country = row[4];
+    mkp._id = atoi(row[0]);
+    mkp._name = row[1];
+    mkp._name_full = row[2];
+    mkp._country_id = atoi(row[3]);
+    mkp._country = row[4];
 
     std::vector<Marketplace>* v_marketplaces = (std::vector<Marketplace>*) user_param;
-    v_marketplaces->push_back(*mkp);
+    v_marketplaces->push_back(mkp);
 
     return true;
 }

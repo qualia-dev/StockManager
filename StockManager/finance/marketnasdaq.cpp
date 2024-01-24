@@ -4,9 +4,34 @@
 #include <sstream>
 #include <chrono>
 
+#include <QEventLoop>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+
 #include "marketnasdaq.h"
 #include "ftpdownloader.h"
 #include "stock.h"
+
+
+// TODO : move to utils
+std::string replacesinglequote( std::string const& original )
+{
+    std::string results;
+    for ( std::string::const_iterator current = original.begin();
+         current != original.end();
+         ++ current ) {
+        if ( *current == '\'' ) {
+            results.push_back( '\'');
+        }
+        results.push_back( *current );
+    }
+    return results;
+}
+
+
 
 MarketNasdaq::MarketNasdaq(SqliteWrap* db)
 {
@@ -47,7 +72,7 @@ bool MarketNasdaq::dwnd_list_securities(const std::string& server, unsigned int 
 bool MarketNasdaq::extract_securities_from_file()
 {
     // open read file and extract lines to vector<char>
-    std::string file_path = "../data/nasdaqlisted10.txt";
+    std::string file_path = "../data/nasdaqlisted.txt";
     std::ifstream file(file_path, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
         std::cerr << "Error opening file: " << file_path << std::endl;
@@ -73,7 +98,7 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
 {
     if (v_securities.empty()) return true;  // it s not an error
 
-    // get the last line containing date-time of the dataset, extract date-time and format to YYYY-MM-DD HH:MM:SS
+    // record_date : get the last line containing date-time of the dataset, extract date-time and format to YYYY-MM-DD HH:MM:SS
     std::string record_date = v_securities.back();
     std::size_t found = record_date.find("File Creation Time:");
     if (found != std::string::npos) {
@@ -86,7 +111,7 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
     record_date.erase(0, record_date.find_first_not_of(" \t\r\n|"));    // Trim leading and trailing spaces or delimiters |
     record_date.erase(record_date.find_last_not_of(" \t\r\n|") + 1);
 
-    // format the date and time
+    // record_date : format the date and time to YYYY-MM-DD HH:MM:SS
     std::istringstream iss(record_date);
     tm tm = {};
     iss >> std::get_time(&tm, "%m%d%Y%H:%M");
@@ -118,7 +143,7 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
         std::stringstream line_ss(line);
 
         std::string symbol, name, market_category, test_issue, financial_status;
-        std::string round_lot, etf, next_shares, record_date;
+        std::string round_lot, etf, next_shares;
 
         // Extract fields from each line
         std::getline(line_ss, symbol, '|');
@@ -171,17 +196,15 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
         s.setLastUpdated(last_updated);
 
         //insert stock in database
-        std::string sql = "INSERT INTO Stock (symbol, name, company_id, ISIN, marketplace_id, marketplace_category, record_date, source_data, last_updated) VALUES ("
+        std::string sql = "INSERT INTO T_Stocks (symbol, name, company_id, ISIN, marketplace_id, marketplace_category, record_date, source_data, last_updated) VALUES ("
                           "'" + s.symbol() + "', "
-                                         "'" + s.name() + "', ";
+                          "'" + replacesinglequote(s.name()) + "', ";
 
         if (s.companyId() == -1) sql += "NULL, ";
         else sql += std::to_string(s.companyId()) + ", ";
-        //sql += "1, ";
 
         if (s.isin() == "NULL") sql += s.isin() + ", ";
         else sql += "'" + s.isin() + "', ";
-        //sql += "'ISIN', ";
 
         sql += std::to_string(s.marketplaceId()) + ", "
                         "'" + s.marketCategory() + "', "
@@ -198,10 +221,174 @@ bool MarketNasdaq::extract_securities(std::vector<std::string>& v_securities)
             continue;
         }
 
-        std::cout << "DB Inserted ! " << count << " " << symbol << " " << name << " " << market_category << " " << test_issue << " " << financial_status << " " << round_lot << " " << etf << " " << next_shares << " " << std::endl;
+        //std::cout << "DB Inserted ! " << count << " " << symbol << " " << name << " " << market_category << " " << test_issue << " " << financial_status << " " << round_lot << " " << etf << " " << next_shares << " " << std::endl;
     }
 
     std::cout << "Total stocks: " << count << " - Inserted : " << count-count_error << " - Error : " << count_error << std::endl;
+
+    return true;
+}
+
+bool MarketNasdaq::dwnd_nasdaq100_components()
+{
+    std::string url = "https://api.nasdaq.com/api/quote/list-type/nasdaq100";
+
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl(QString::fromStdString(url)));
+    QNetworkReply *reply = manager.get(request);
+
+    // Setup an event loop to wait for the reply finished signal
+    QEventLoop loop;
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    QString content = "";
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qDebug() << "MarketNasdaq::dwnd_nasdaq100_components() - Error:" << reply->errorString();
+        reply->deleteLater();
+        return false;
+    }
+
+    QByteArray data = reply->readAll();     // Read the downloaded data
+    content = QString::fromUtf8(data);
+
+    // Process the content as JSON data
+    QJsonDocument doc = QJsonDocument::fromJson(content.toUtf8());
+
+    if (doc.isNull())
+    {
+        qDebug() << "MarketNasdaq::dwnd_nasdaq100_components() - Failed to create JSON doc.";
+        reply->deleteLater();
+        return false;
+    }
+
+    QJsonObject obj = doc.object();
+    QJsonObject data_obj = obj["data"].toObject();
+    QJsonObject rows_obj = data_obj["data"].toObject();
+    QJsonArray dataArray = rows_obj["rows"].toArray();
+
+    if (dataArray.isEmpty())
+    {
+        qDebug() << "MarketNasdaq::dwnd_nasdaq100_components() - JSON doc is empty.";
+        reply->deleteLater();
+        return false;
+    }
+
+    // TODO : get Nasdaq100 index id from database
+    int id_nasdaq_index = 1;
+
+    // Iterate over the array
+    int count = 0;
+    int count_error = 0;
+    for (const auto& value : dataArray) {
+        count ++;
+        QJsonObject obj = value.toObject();
+        std::string symbol = obj["symbol"].toString().toStdString();
+        std::string name_index = obj["companyName"].toString().toStdString();
+
+        // get stock object from symbol
+        int id_stock = -1;
+        Stock s;
+        std::vector<Stock> v_stocks;
+        std::string sql_condition = "symbol = '" + symbol + "'";
+
+        if (!_db->select_sync("V_Stocks", sql_condition, (void*)&v_stocks, Stock::deserialize)) {
+            std::cerr << "MarketNasdaq::dwnd_nasdaq100_components() - Error select getting stock " << symbol << " from database." << std::endl;
+            count_error++;
+            continue;
+        }
+
+        if (v_stocks.size() != 1) {
+            std::cerr << "MarketNasdaq::dwnd_nasdaq100_components() - Error getting stock " << symbol << " from database. Nb records returned " << v_stocks.size() << std::endl;
+            count_error++;
+            continue;
+        }
+
+        id_stock = v_stocks[0].id();
+
+        // insert in table Stock_In_Indexes : id_index, id_stock
+        std::string sql = "INSERT INTO T_Stocks_In_Indexes (id_index, id_stock) VALUES (";
+        sql += std::to_string(id_nasdaq_index) + ", ";
+        sql += std::to_string(id_stock) + ");";
+
+        if (!_db->execute_sql(sql)) {
+            std::cerr << "Error inserting stock " << symbol << " in index." << std::endl;
+            count_error++;
+            continue;
+        }
+
+        std::cout << "DB Inserted ! " << count << " " << symbol << " " << name_index << std::endl;
+    }
+
+    std::cout << "Total stocks inserted in index: " << count << " - Inserted : " << count-count_error << " - Error : " << count_error << std::endl;
+
+    reply->deleteLater();   // Clean up
+
+    return true;
+}
+
+bool MarketNasdaq::dwnd_company_profile(const std::string &symbol)
+{
+    // https://api.nasdaq.com/api/company/INTC/company-profile
+
+    std::string url = "https://api.nasdaq.com/api/company/" + symbol + "/company-profile";
+
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl(QString::fromStdString(url)));
+    QNetworkReply *reply = manager.get(request);
+
+    // Setup an event loop to wait for the reply finished signal
+    QEventLoop loop;
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    QString content = "";
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qDebug() << "MarketNasdaq::dwnd_company_profile(...) - Error:" << reply->errorString();
+        reply->deleteLater();
+        return false;
+    }
+
+    QByteArray data = reply->readAll();     // Read the downloaded data
+    content = QString::fromUtf8(data);
+
+    // Process the content as JSON data
+    QJsonDocument doc = QJsonDocument::fromJson(content.toUtf8());
+
+    if (doc.isNull())
+    {
+        qDebug() << "MarketNasdaq::dwnd_company_profile(...) - Failed to create JSON doc.";
+        reply->deleteLater();
+        return false;
+    }
+
+    QJsonObject obj = doc.object();
+    QJsonObject data_obj = obj["data"].toObject();
+    QJsonObject industry_obj = data_obj["Industry"].toObject();
+    QString industry = industry_obj["value"].toString();
+
+    QJsonObject sector_obj = data_obj["Sector"].toObject();
+    QString sector = sector_obj["value"].toString();
+
+    QJsonObject description_obj = data_obj["CompanyDescription"].toObject();
+    QString description = description_obj["value"].toString();
+
+    // update table T_Stocks : industry, sector
+    std::string sql = "UPDATE T_Stocks SET industry = '" + industry.toStdString() + "', sector = '" + sector.toStdString() + "' WHERE symbol = '" + symbol + "';";
+    if (!_db->execute_sql(sql)) {
+        std::cerr << "MarketNasdaq::dwnd_company_profile(...) - Error updating stock " << symbol << " in database." << std::endl;
+        reply->deleteLater();
+        return false;
+    }
+    std::cout << "DB Updated ! " << symbol << " " << industry.toStdString() << " " << sector.toStdString() << std::endl;
+    return true;
+}
+
+bool MarketNasdaq::dwnd_historical_data(const std::string &symbol)
+{
+    // https://api.nasdaq.com/api/quote/INTC/historical?assetclass=stocks&fromdate=2014-01-21&limit=9999&todate=2024-01-21&random=12
 
     return true;
 }

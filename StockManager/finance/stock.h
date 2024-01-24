@@ -58,6 +58,7 @@ public:
 
     // From db
     static bool deserialize (void* user_param, char** cols, int nb_col);
+    static bool deserialize_compo_index (void* user_param, char** cols, int nb_col);
 
 };
 
